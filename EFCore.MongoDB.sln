@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31521.260
+MinimumVisualStudioVersion = 17.0.31521.260
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9E4CC99-199C-4E3B-9EC5-D1FDFCD6C27B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CE6B50B2-34AE-44C9-940A-4E48C3E1B3BC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MongoDB", "src\EFCore.MongoDB\EFCore.MongoDB.csproj", "{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C} = {CE6B50B2-34AE-44C9-940A-4E48C3E1B3BC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {285A5EB4-BCF4-40EB-B9E1-DF6DBCB5E705}
+	EndGlobalSection
+EndGlobal
