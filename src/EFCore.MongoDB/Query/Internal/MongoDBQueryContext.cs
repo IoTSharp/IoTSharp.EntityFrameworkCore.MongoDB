@@ -21,10 +21,10 @@ public class MongoDBQueryContext : QueryContext
     /// </summary>
     public MongoDBQueryContext(
         QueryContextDependencies dependencies,
-        IMongoDBClientWrapper MongoDBClient)
+        IMongoDBClientWrapper _MongoDBClient)
         : base(dependencies)
     {
-        MongoDBClient = MongoDBClient;
+        MongoDBClient = _MongoDBClient;
     }
 
     /// <summary>
