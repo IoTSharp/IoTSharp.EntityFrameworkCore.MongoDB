@@ -15,14 +15,14 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 public static class MongoDBDatabaseFacadeExtensions
 {
     /// <summary>
-    ///     Gets the underlying <see cref="MongoDBClient" /> for this <see cref="DbContext" />.
+    ///     Gets the underlying <see cref="CosmosClient" /> for this <see cref="DbContext" />.
     /// </summary>
     /// <remarks>
     ///     See <see href="https://aka.ms/efcore-docs-MongoDB">Accessing Azure MongoDB DB with EF Core</see> for more information and examples.
     /// </remarks>
     /// <param name="databaseFacade">The <see cref="DatabaseFacade" /> for the context.</param>
-    /// <returns>The <see cref="MongoDBClient" /></returns>
-    public static MongoDBClient GetMongoDBClient(this DatabaseFacade databaseFacade)
+    /// <returns>The <see cref="CosmosClient" /></returns>
+    public static CosmosClient GetMongoDBClient(this DatabaseFacade databaseFacade)
         => GetService<ISingletonMongoDBClientWrapper>(databaseFacade).Client;
 
     private static TService GetService<TService>(IInfrastructure<IServiceProvider> databaseFacade)

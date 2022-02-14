@@ -4,13 +4,14 @@ using System;
 using System.Reflection;
 using System.Resources;
 using System.Threading;
+using IoTSharp.EntityFrameworkCore.MongoDB.Diagnostics;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 
 #nullable enable
 
-namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
+namespace IoTSharp.EntityFrameworkCore.MongoDB.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -350,7 +351,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
     }
 }
 
-namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
+namespace IoTSharp.EntityFrameworkCore.MongoDB.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -361,7 +362,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
     public static class MongoDBResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBResources).Assembly);
+            = new ResourceManager("IoTSharp.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBResources).Assembly);
 
         /// <summary>
         ///     Executed CreateItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'

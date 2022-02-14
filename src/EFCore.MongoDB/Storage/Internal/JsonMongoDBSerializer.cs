@@ -12,7 +12,7 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 ///     any release. You should only use it directly in your code with extreme caution and knowing that
 ///     doing so can result in application failures when updating to a new Entity Framework Core release.
 /// </summary>
-public class JsonMongoDBSerializer : MongoDBSerializer
+public class JsonCosmosDBSerializer : CosmosSerializer
 {
     private static readonly Encoding DefaultEncoding = new UTF8Encoding(false, true);
 

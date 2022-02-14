@@ -14,11 +14,11 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
 {
     private static readonly string UserAgent = " IoTSharp.EntityFrameworkCore.MongoDB/" + ProductInfo.GetVersion();
-    private readonly MongoDBClientOptions _options;
+    private readonly CosmosClientOptions _options;
     private readonly string? _endpoint;
     private readonly string? _key;
     private readonly string? _connectionString;
-    private MongoDBClient? _client;
+    private CosmosClient? _client;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -31,7 +31,7 @@ public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
         _endpoint = options.AccountEndpoint;
         _key = options.AccountKey;
         _connectionString = options.ConnectionString;
-        var configuration = new MongoDBClientOptions { ApplicationName = UserAgent, Serializer = new JsonMongoDBSerializer() };
+        var configuration = new CosmosClientOptions { ApplicationName = UserAgent, Serializer = new JsonCosmosDBSerializer() };
 
         if (options.Region != null)
         {
@@ -97,10 +97,10 @@ public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual MongoDBClient Client
+    public virtual CosmosClient Client
         => _client ??= string.IsNullOrEmpty(_connectionString)
-            ? new MongoDBClient(_endpoint, _key, _options)
-            : new MongoDBClient(_connectionString, _options);
+            ? new CosmosClient(_endpoint, _key, _options)
+            : new CosmosClient(_connectionString, _options);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to

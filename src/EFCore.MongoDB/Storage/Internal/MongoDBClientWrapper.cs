@@ -74,7 +74,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         _enableContentResponseOnWrite = options.EnableContentResponseOnWrite;
     }
 
-    private MongoDBClient Client
+    private CosmosClient Client
         => _singletonWrapper.Client;
 
     /// <summary>
@@ -189,7 +189,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     {
         var (parameters, wrapper) = parametersTuple;
         using var response = await wrapper.Client.GetDatabase(wrapper._databaseId).CreateContainerStreamAsync(
-                new Azure.MongoDB.ContainerProperties(parameters.Id, "/" + parameters.PartitionKey)
+                new  Microsoft.Azure.Cosmos.ContainerProperties(parameters.Id, "/" + parameters.PartitionKey)
                 {
                     PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2,
                     DefaultTimeToLive = parameters.DefaultTimeToLive,

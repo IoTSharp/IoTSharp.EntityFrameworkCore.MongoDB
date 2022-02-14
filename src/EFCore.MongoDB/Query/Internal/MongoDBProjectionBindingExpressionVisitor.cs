@@ -337,7 +337,7 @@ public class MongoDBProjectionBindingExpressionVisitor : ExpressionVisitor
                         Expression.Convert(objectArrayProjectionExpression.InnerProjection, typeof(object)), typeof(ValueBuffer)),
                     nullable: true);
 
-                return new EntityFrameworkCore.Query.Internal.CollectionShaperExpression(
+                return new  CollectionShaperExpression(
                     objectArrayProjectionExpression,
                     innerShaperExpression,
                     navigation,
@@ -537,7 +537,7 @@ public class MongoDBProjectionBindingExpressionVisitor : ExpressionVisitor
                             Expression.Convert(objectArrayProjectionExpression.InnerProjection, typeof(object)), typeof(ValueBuffer)),
                         nullable: true);
 
-                    return new EntityFrameworkCore.Query.Internal.CollectionShaperExpression(
+                    return new CollectionShaperExpression(
                         objectArrayProjectionExpression,
                         innerShaperExpression,
                         navigation,
