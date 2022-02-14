@@ -38,6 +38,8 @@
     <Compile Include="..\Shared\*.cs" />
   </ItemGroup>
 
+ 
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.24.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.2" />
@@ -70,8 +72,9 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\MongoDBStrings.resx">
-      <CustomToolNamespace>Microsoft.EntityFrameworkCore.MongoDB.Internal</CustomToolNamespace>
+      <CustomToolNamespace>IoTSharp.EntityFrameworkCore.MongoDB.Internal</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+  
 
 </Project>

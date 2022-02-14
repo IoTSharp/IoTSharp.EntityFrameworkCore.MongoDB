@@ -22,7 +22,7 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Internal
     public static class MongoDBStrings
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBStrings).Assembly);
+            = new ResourceManager("IoTSharp.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBStrings).Assembly);
 
         /// <summary>
         ///     The time to live for analytical store was configured to '{ttl1}' on '{entityType1}', but on '{entityType2}' it was configured to '{ttl2}'. All entity types mapped to the same container '{container}' must be configured with the same time to live for analytical store.
