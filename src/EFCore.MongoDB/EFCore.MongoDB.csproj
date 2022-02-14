@@ -49,22 +49,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Properties\MongoDBStrings.Designer.cs">
+      <DependentUpon>MongoDBStrings.Designer.tt</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>MongoDBStrings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\MongoDBStrings.resx">
-      <CustomToolNamespace>IoTSharp.EntityFrameworkCore.MongoDB.Internal</CustomToolNamespace>
-      <Generator>ResXFileCodeGenerator</Generator>
+    <None Update="Properties\MongoDBStrings.Designer.tt">
+      <CustomToolNamespace></CustomToolNamespace>
+      <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>MongoDBStrings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\MongoDBStrings.resx">
+      <CustomToolNamespace>Microsoft.EntityFrameworkCore.MongoDB.Internal</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
 

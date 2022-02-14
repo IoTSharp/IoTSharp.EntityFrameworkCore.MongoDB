@@ -21,7 +21,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
     public static class MongoDBStrings
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.EntityFrameworkCore.Cosmos.Properties.CosmosStrings", typeof(MongoDBStrings).Assembly);
+            = new ResourceManager("Microsoft.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBStrings).Assembly);
 
         /// <summary>
         ///     The time to live for analytical store was configured to '{ttl1}' on '{entityType1}', but on '{entityType2}' it was configured to '{ttl2}'. All entity types mapped to the same container '{container}' must be configured with the same time to live for analytical store.
@@ -32,7 +32,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
                 ttl1, entityType1, entityType2, ttl2, container);
 
         /// <summary>
-        ///     The Cosmos database does not support 'CanConnect' or 'CanConnectAsync'.
+        ///     The MongoDB database does not support 'CanConnect' or 'CanConnectAsync'.
         /// </summary>
         public static string CanConnectNotSupported
             => GetString("CanConnectNotSupported");
@@ -44,10 +44,10 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
             => GetString("ConnectionStringConflictingConfiguration");
 
         /// <summary>
-        ///     Cosmos-specific methods can only be used when the context is using the Cosmos provider.
+        ///     MongoDB-specific methods can only be used when the context is using the MongoDB provider.
         /// </summary>
-        public static string CosmosNotInUse
-            => GetString("CosmosNotInUse");
+        public static string MongoDBNotInUse
+            => GetString("MongoDBNotInUse");
 
         /// <summary>
         ///     The default time to live was configured to '{ttl1}' on '{entityType1}', but on '{entityType2}' it was configured to '{ttl2}'. All entity types mapped to the same container '{container}' must be configured with the same default time to live.
@@ -206,7 +206,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
                 sqlExpression);
 
         /// <summary>
-        ///     Cosmos SQL does not allow Offset without Limit. Consider specifying a 'Take' operation on the query.
+        ///     MongoDB SQL does not allow Offset without Limit. Consider specifying a 'Take' operation on the query.
         /// </summary>
         public static string OffsetRequiresLimit
             => GetString("OffsetRequiresLimit");
@@ -294,7 +294,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
                 manualEntityType, autoscaleEntityType, container);
 
         /// <summary>
-        ///     The Cosmos database provider does not support transactions.
+        ///     The MongoDB database provider does not support transactions.
         /// </summary>
         public static string TransactionsNotSupported
             => GetString("TransactionsNotSupported");
@@ -350,7 +350,7 @@ namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
     }
 }
 
-namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
+namespace Microsoft.EntityFrameworkCore.MongoDB.Internal
 {
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -358,30 +358,30 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static class CosmosResources
+    public static class MongoDBResources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.EntityFrameworkCore.Cosmos.Properties.CosmosStrings", typeof(CosmosResources).Assembly);
+            = new ResourceManager("Microsoft.EntityFrameworkCore.MongoDB.Properties.MongoDBStrings", typeof(MongoDBResources).Assembly);
 
         /// <summary>
         ///     Executed CreateItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'
         /// </summary>
         public static EventDefinition<string, string, string, string, string, string?> LogExecutedCreateItem(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedCreateItem;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedCreateItem;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedCreateItem,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedCreateItem,
                     logger,
                     static logger => new EventDefinition<string, string, string, string, string, string?>(
                         logger.Options,
-                        CosmosEventId.ExecutedCreateItem,
+                        MongoDBEventId.ExecutedCreateItem,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutedCreateItem",
+                        "MongoDBEventId.ExecutedCreateItem",
                         level => LoggerMessage.Define<string, string, string, string, string, string?>(
                             level,
-                            CosmosEventId.ExecutedCreateItem,
+                            MongoDBEventId.ExecutedCreateItem,
                             _resourceManager.GetString("LogExecutedCreateItem")!)));
             }
 
@@ -393,20 +393,20 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static EventDefinition<string, string, string, string, string, string?> LogExecutedDeleteItem(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedDeleteItem;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedDeleteItem;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedDeleteItem,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedDeleteItem,
                     logger,
                     static logger => new EventDefinition<string, string, string, string, string, string?>(
                         logger.Options,
-                        CosmosEventId.ExecutedDeleteItem,
+                        MongoDBEventId.ExecutedDeleteItem,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutedDeleteItem",
+                        "MongoDBEventId.ExecutedDeleteItem",
                         level => LoggerMessage.Define<string, string, string, string, string, string?>(
                             level,
-                            CosmosEventId.ExecutedDeleteItem,
+                            MongoDBEventId.ExecutedDeleteItem,
                             _resourceManager.GetString("LogExecutedDeleteItem")!)));
             }
 
@@ -418,20 +418,20 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static EventDefinition<string, string, string, string, string, string?> LogExecutedReadItem(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReadItem;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReadItem;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReadItem,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReadItem,
                     logger,
                     static logger => new EventDefinition<string, string, string, string, string, string?>(
                         logger.Options,
-                        CosmosEventId.ExecutedReadItem,
+                        MongoDBEventId.ExecutedReadItem,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutedReadItem",
+                        "MongoDBEventId.ExecutedReadItem",
                         level => LoggerMessage.Define<string, string, string, string, string, string?>(
                             level,
-                            CosmosEventId.ExecutedReadItem,
+                            MongoDBEventId.ExecutedReadItem,
                             _resourceManager.GetString("LogExecutedReadItem")!)));
             }
 
@@ -443,17 +443,17 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static FallbackEventDefinition LogExecutedReadNext(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReadNext;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReadNext;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReadNext,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReadNext,
                     logger,
                     static logger => new FallbackEventDefinition(
                         logger.Options,
-                        CosmosEventId.ExecutedReadNext,
+                        MongoDBEventId.ExecutedReadNext,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutedReadNext",
+                        "MongoDBEventId.ExecutedReadNext",
                         _resourceManager.GetString("LogExecutedReadNext")!));
             }
 
@@ -465,20 +465,20 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static EventDefinition<string, string, string, string, string, string?> LogExecutedReplaceItem(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReplaceItem;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReplaceItem;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutedReplaceItem,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutedReplaceItem,
                     logger,
                     static logger => new EventDefinition<string, string, string, string, string, string?>(
                         logger.Options,
-                        CosmosEventId.ExecutedReplaceItem,
+                        MongoDBEventId.ExecutedReplaceItem,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutedReplaceItem",
+                        "MongoDBEventId.ExecutedReplaceItem",
                         level => LoggerMessage.Define<string, string, string, string, string, string?>(
                             level,
-                            CosmosEventId.ExecutedReplaceItem,
+                            MongoDBEventId.ExecutedReplaceItem,
                             _resourceManager.GetString("LogExecutedReplaceItem")!)));
             }
 
@@ -490,20 +490,20 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static EventDefinition<string, string, string?> LogExecutingReadItem(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutingReadItem;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutingReadItem;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutingReadItem,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutingReadItem,
                     logger,
                     static logger => new EventDefinition<string, string, string?>(
                         logger.Options,
-                        CosmosEventId.ExecutingReadItem,
+                        MongoDBEventId.ExecutingReadItem,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutingReadItem",
+                        "MongoDBEventId.ExecutingReadItem",
                         level => LoggerMessage.Define<string, string, string?>(
                             level,
-                            CosmosEventId.ExecutingReadItem,
+                            MongoDBEventId.ExecutingReadItem,
                             _resourceManager.GetString("LogExecutingReadItem")!)));
             }
 
@@ -515,20 +515,20 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Internal
         /// </summary>
         public static EventDefinition<string, string?, string, string, string> LogExecutingSqlQuery(IDiagnosticsLogger logger)
         {
-            var definition = ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutingSqlQuery;
+            var definition = ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutingSqlQuery;
             if (definition == null)
             {
                 definition = NonCapturingLazyInitializer.EnsureInitialized(
-                    ref ((Diagnostics.Internal.CosmosLoggingDefinitions)logger.Definitions).LogExecutingSqlQuery,
+                    ref ((Diagnostics.Internal.MongoDBLoggingDefinitions)logger.Definitions).LogExecutingSqlQuery,
                     logger,
                     static logger => new EventDefinition<string, string?, string, string, string>(
                         logger.Options,
-                        CosmosEventId.ExecutingSqlQuery,
+                        MongoDBEventId.ExecutingSqlQuery,
                         LogLevel.Information,
-                        "CosmosEventId.ExecutingSqlQuery",
+                        "MongoDBEventId.ExecutingSqlQuery",
                         level => LoggerMessage.Define<string, string?, string, string, string>(
                             level,
-                            CosmosEventId.ExecutingSqlQuery,
+                            MongoDBEventId.ExecutingSqlQuery,
                             _resourceManager.GetString("LogExecutingSqlQuery")!)));
             }
 
