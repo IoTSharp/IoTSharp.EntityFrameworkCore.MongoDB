@@ -121,13 +121,13 @@
     <value>The time to live for analytical store was configured to '{ttl1}' on '{entityType1}', but on '{entityType2}' it was configured to '{ttl2}'. All entity types mapped to the same container '{container}' must be configured with the same time to live for analytical store.</value>
   </data>
   <data name="CanConnectNotSupported" xml:space="preserve">
-    <value>The MongoDB database does not support 'CanConnect' or 'CanConnectAsync'.</value>
+    <value>The Cosmos database does not support 'CanConnect' or 'CanConnectAsync'.</value>
   </data>
   <data name="ConnectionStringConflictingConfiguration" xml:space="preserve">
     <value>Both the connection string and account key or account endpoint were specified. Specify only one set of connection details.</value>
   </data>
-  <data name="MongoDBNotInUse" xml:space="preserve">
-    <value>MongoDB-specific methods can only be used when the context is using the MongoDB provider.</value>
+  <data name="CosmosNotInUse" xml:space="preserve">
+    <value>Cosmos-specific methods can only be used when the context is using the Cosmos provider.</value>
   </data>
   <data name="DefaultTTLMismatch" xml:space="preserve">
     <value>The default time to live was configured to '{ttl1}' on '{entityType1}', but on '{entityType2}' it was configured to '{ttl2}'. All entity types mapped to the same container '{container}' must be configured with the same default time to live.</value>
@@ -155,31 +155,31 @@
   </data>
   <data name="LogExecutedCreateItem" xml:space="preserve">
     <value>Executed CreateItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'</value>
-    <comment>Information MongoDBEventId.ExecutedCreateItem string string string string string string?</comment>
+    <comment>Information CosmosEventId.ExecutedCreateItem string string string string string string?</comment>
   </data>
   <data name="LogExecutedDeleteItem" xml:space="preserve">
     <value>Executed DeleteItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'</value>
-    <comment>Information MongoDBEventId.ExecutedDeleteItem string string string string string string?</comment>
+    <comment>Information CosmosEventId.ExecutedDeleteItem string string string string string string?</comment>
   </data>
   <data name="LogExecutedReadItem" xml:space="preserve">
     <value>Executed ReadItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'</value>
-    <comment>Information MongoDBEventId.ExecutedReadItem string string string string string string?</comment>
+    <comment>Information CosmosEventId.ExecutedReadItem string string string string string string?</comment>
   </data>
   <data name="LogExecutedReadNext" xml:space="preserve">
     <value>Executed ReadNext ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Partition='{partitionKey}', Parameters=[{parameters}]{newLine}{sql}</value>
-    <comment>Information MongoDBEventId.ExecutedReadNext string string string string string? string string string string</comment>
+    <comment>Information CosmosEventId.ExecutedReadNext string string string string string? string string string string</comment>
   </data>
   <data name="LogExecutedReplaceItem" xml:space="preserve">
     <value>Executed ReplaceItem ({elapsed} ms, {charge} RU) ActivityId='{activityId}', Container='{container}', Id='{id}', Partition='{partitionKey}'</value>
-    <comment>Information MongoDBEventId.ExecutedReplaceItem string string string string string string?</comment>
+    <comment>Information CosmosEventId.ExecutedReplaceItem string string string string string string?</comment>
   </data>
   <data name="LogExecutingReadItem" xml:space="preserve">
     <value>Reading resource '{resourceId}' item from container '{containerId}' in partition '{partitionKey}'.</value>
-    <comment>Information MongoDBEventId.ExecutingReadItem string string string?</comment>
+    <comment>Information CosmosEventId.ExecutingReadItem string string string?</comment>
   </data>
   <data name="LogExecutingSqlQuery" xml:space="preserve">
     <value>Executing SQL query for container '{containerId}' in partition '{partitionKey}' [Parameters=[{parameters}]]{newLine}{commandText}</value>
-    <comment>Information MongoDBEventId.ExecutingSqlQuery string string? string string string</comment>
+    <comment>Information CosmosEventId.ExecutingSqlQuery string string? string string string</comment>
   </data>
   <data name="MissingOrderingInSelectExpression" xml:space="preserve">
     <value>'Reverse' could not be translated to the server because there is no ordering on the server side.</value>
@@ -218,7 +218,7 @@
     <value>The expression '{sqlExpression}' in the SQL tree does not have a type mapping assigned.</value>
   </data>
   <data name="OffsetRequiresLimit" xml:space="preserve">
-    <value>MongoDB SQL does not allow Offset without Limit. Consider specifying a 'Take' operation on the query.</value>
+    <value>Cosmos SQL does not allow Offset without Limit. Consider specifying a 'Take' operation on the query.</value>
   </data>
   <data name="OrphanedNestedDocument" xml:space="preserve">
     <value>The entity of type '{entityType}' is mapped as a part of the document mapped to '{missingEntityType}', but there is no tracked entity of this type with the corresponding key value. Consider using 'DbContextOptionsBuilder.EnableSensitiveDataLogging' to see the key values.</value>
@@ -254,7 +254,7 @@
     <value>The provisioned throughput was configured as manual on '{manualEntityType}', but on '{autoscaleEntityType}' it was configured as autoscale. All entity types mapped to the same container '{container}' must be configured with the same provisioned throughput type.</value>
   </data>
   <data name="TransactionsNotSupported" xml:space="preserve">
-    <value>The MongoDB database provider does not support transactions.</value>
+    <value>The Cosmos database provider does not support transactions.</value>
   </data>
   <data name="UnableToBindMemberToEntityProjection" xml:space="preserve">
     <value>Unable to bind '{memberType}' '{member}' to an entity projection of '{entityType}'.</value>

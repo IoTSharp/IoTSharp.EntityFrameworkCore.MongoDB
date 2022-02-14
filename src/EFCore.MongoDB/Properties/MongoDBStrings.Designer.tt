@@ -1,0 +1,5 @@
+﻿<#
+    Session["ResourceFile"] = "MongoDBStrings.resx";
+    Session["LoggingDefinitionsClass"] = "Diagnostics.Internal.CosmosLoggingDefinitions";
+#>
+<#@ include file="..\..\..\tools\Resources.tt" #>

@@ -31,7 +31,7 @@ public static class MongoDBLoggerExtensions
         string? partitionKey,
         MongoDBSqlQuery MongoDBSqlQuery)
     {
-        var definition = MongoDBResources.LogExecutingSqlQuery(diagnostics);
+        var definition = CosmosResources.LogExecutingSqlQuery(diagnostics);
 
         if (diagnostics.ShouldLog(definition))
         {
@@ -85,7 +85,7 @@ public static class MongoDBLoggerExtensions
         string? partitionKey,
         string resourceId)
     {
-        var definition = MongoDBResources.LogExecutingReadItem(diagnostics);
+        var definition = CosmosResources.LogExecutingReadItem(diagnostics);
 
         if (diagnostics.ShouldLog(definition))
         {

@@ -1,4 +1,4 @@
-
+<#@ template hostspecific="true" #>
 <#@ assembly name="Microsoft.VisualStudio.Interop" #>
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Windows.Forms" #>

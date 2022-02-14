@@ -370,7 +370,7 @@ public class MongoDBDatabaseWrapper : Database
             MongoDBException { StatusCode: HttpStatusCode.PreconditionFailed }
                 => new DbUpdateConcurrencyException(MongoDBStrings.UpdateConflict(id), exception, new[] { entry }),
             MongoDBException { StatusCode: HttpStatusCode.Conflict }
-                => new DbUpdateException(MongoDBStrings.UpdateConflict(id), exception, new[] { entry }),
+                => new DbUpdateException(CosmosStrings.UpdateConflict(id), exception, new[] { entry }),
             _ => new DbUpdateException(MongoDBStrings.UpdateStoreException(id), exception, new[] { entry })
         };
     }
