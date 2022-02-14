@@ -367,9 +367,9 @@ public class MongoDBDatabaseWrapper : Database
 
         return exception switch
         {
-            CosmosException { StatusCode: HttpStatusCode.PreconditionFailed }
+             MongoDBException { StatusCode: HttpStatusCode.PreconditionFailed }
                 => new DbUpdateConcurrencyException(MongoDBStrings.UpdateConflict(id), exception, new[] { entry }),
-            CosmosException { StatusCode: HttpStatusCode.Conflict }
+            MongoDBException { StatusCode: HttpStatusCode.Conflict }
                 => new DbUpdateException(MongoDBStrings.UpdateConflict(id), exception, new[] { entry }),
             _ => new DbUpdateException(MongoDBStrings.UpdateStoreException(id), exception, new[] { entry })
         };

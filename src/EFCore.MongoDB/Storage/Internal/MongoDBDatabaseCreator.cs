@@ -219,6 +219,6 @@ public class MongoDBDatabaseCreator : IDatabaseCreator
         var name = entityType.GetPartitionKeyPropertyName();
         return name != null
             ? entityType.FindProperty(name)!.GetJsonPropertyName()
-            : MongoDBClientWrapper.DefaultPartitionKey;
+            : MongoDBClientWrapper.DefaultKey;
     }
 }

@@ -96,7 +96,7 @@ public class MongoDBExecutionStrategy : ExecutionStrategy
     {
         return exception switch
         {
-            CosmosException MongoDBException => IsTransient(MongoDBException.StatusCode),
+            MongoDBException MongoDBException => IsTransient(MongoDBException.StatusCode),
             HttpException httpException => IsTransient(httpException.Response.StatusCode),
             WebException webException => IsTransient(((HttpWebResponse)webException.Response!).StatusCode),
             _ => false
@@ -126,7 +126,7 @@ public class MongoDBExecutionStrategy : ExecutionStrategy
     {
         switch (exception)
         {
-            case CosmosException MongoDBException:
+            case MongoDBException MongoDBException:
                 return MongoDBException.RetryAfter;
 
             case HttpException httpException:

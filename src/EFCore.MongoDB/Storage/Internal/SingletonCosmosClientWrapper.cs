@@ -14,11 +14,11 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
 {
     private static readonly string UserAgent = " IoTSharp.EntityFrameworkCore.MongoDB/" + ProductInfo.GetVersion();
-    private readonly CosmosClientOptions _options;
+    private readonly MongoClientSettings _options;
     private readonly string? _endpoint;
     private readonly string? _key;
     private readonly string? _connectionString;
-    private CosmosClient? _client;
+    private MongoClient? _client;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -26,70 +26,11 @@ public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public SingletonMongoDBClientWrapper(IMongoDBSingletonOptions options)
+    public SingletonMongoDBClientWrapper(MongoClientSettings options)
     {
-        _endpoint = options.AccountEndpoint;
-        _key = options.AccountKey;
-        _connectionString = options.ConnectionString;
-        var configuration = new CosmosClientOptions { ApplicationName = UserAgent, Serializer = new JsonCosmosDBSerializer() };
-
-        if (options.Region != null)
-        {
-            configuration.ApplicationRegion = options.Region;
-        }
-
-        if (options.LimitToEndpoint != null)
-        {
-            configuration.LimitToEndpoint = options.LimitToEndpoint.Value;
-        }
-
-        if (options.ConnectionMode != null)
-        {
-            configuration.ConnectionMode = options.ConnectionMode.Value;
-        }
-
-        if (options.WebProxy != null)
-        {
-            configuration.WebProxy = options.WebProxy;
-        }
-
-        if (options.RequestTimeout != null)
-        {
-            configuration.RequestTimeout = options.RequestTimeout.Value;
-        }
-
-        if (options.OpenTcpConnectionTimeout != null)
-        {
-            configuration.OpenTcpConnectionTimeout = options.OpenTcpConnectionTimeout.Value;
-        }
-
-        if (options.IdleTcpConnectionTimeout != null)
-        {
-            configuration.IdleTcpConnectionTimeout = options.IdleTcpConnectionTimeout.Value;
-        }
-
-        if (options.GatewayModeMaxConnectionLimit != null)
-        {
-            configuration.GatewayModeMaxConnectionLimit = options.GatewayModeMaxConnectionLimit.Value;
-        }
-
-        if (options.MaxTcpConnectionsPerEndpoint != null)
-        {
-            configuration.MaxTcpConnectionsPerEndpoint = options.MaxTcpConnectionsPerEndpoint.Value;
-        }
-
-        if (options.MaxRequestsPerTcpConnection != null)
-        {
-            configuration.MaxRequestsPerTcpConnection = options.MaxRequestsPerTcpConnection.Value;
-        }
-
-        if (options.HttpClientFactory != null)
-        {
-            configuration.HttpClientFactory = options.HttpClientFactory;
-        }
-
-        _options = configuration;
+        _options = options;
     }
+    public SingletonMongoDBClientWrapper(string connectionString) => _connectionString = connectionString;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -97,10 +38,10 @@ public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual CosmosClient Client
+    public virtual  MongoClient Client
         => _client ??= string.IsNullOrEmpty(_connectionString)
-            ? new CosmosClient(_endpoint, _key, _options)
-            : new CosmosClient(_connectionString, _options);
+            ? new MongoClient( _options)
+            : new MongoClient(_connectionString);
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -110,7 +51,7 @@ public class SingletonMongoDBClientWrapper : ISingletonMongoDBClientWrapper
     /// </summary>
     public virtual void Dispose()
     {
-        _client?.Dispose();
+        _client?.Cluster?.Dispose();
         _client = null;
     }
 }

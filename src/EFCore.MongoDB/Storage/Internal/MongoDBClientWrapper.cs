@@ -10,6 +10,8 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Diagnostics.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Infrastructure.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
+using MongoDB.Bson;
+using MongoDB.Driver.Core.WireProtocol.Messages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -37,7 +39,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static readonly string DefaultPartitionKey = "__partitionKey";
+    public static readonly string DefaultKey = "__Key";
 
     private readonly ISingletonMongoDBClientWrapper _singletonWrapper;
     private readonly string _databaseId;
@@ -74,7 +76,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         _enableContentResponseOnWrite = options.EnableContentResponseOnWrite;
     }
 
-    private CosmosClient Client
+    private MongoClient Client
         => _singletonWrapper.Client;
 
     /// <summary>
@@ -109,11 +111,9 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         CancellationToken cancellationToken = default)
     {
         var (throughput, wrapper) = parameters;
-        var response = await wrapper.Client.CreateDatabaseIfNotExistsAsync(
-                wrapper._databaseId, throughput, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        return response.StatusCode == HttpStatusCode.Created;
+        var db = wrapper.Client.GetDatabase(wrapper._databaseId);
+        var names = await db.ListCollectionNamesAsync(cancellationToken: cancellationToken).ConfigureAwait(true);
+        return names != null;
     }
 
     /// <summary>
@@ -145,16 +145,8 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         MongoDBClientWrapper wrapper,
         CancellationToken cancellationToken = default)
     {
-        using var response = await wrapper.Client.GetDatabase(wrapper._databaseId)
-            .DeleteStreamAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return false;
-        }
-
-        response.EnsureSuccessStatusCode();
-        return response.StatusCode == HttpStatusCode.NoContent;
+        await wrapper.Client.DropDatabaseAsync(wrapper._databaseId, cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
     /// <summary>
@@ -188,23 +180,9 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         CancellationToken cancellationToken = default)
     {
         var (parameters, wrapper) = parametersTuple;
-        using var response = await wrapper.Client.GetDatabase(wrapper._databaseId).CreateContainerStreamAsync(
-                new  Microsoft.Azure.Cosmos.ContainerProperties(parameters.Id, "/" + parameters.PartitionKey)
-                {
-                    PartitionKeyDefinitionVersion = PartitionKeyDefinitionVersion.V2,
-                    DefaultTimeToLive = parameters.DefaultTimeToLive,
-                    AnalyticalStoreTimeToLiveInSeconds = parameters.AnalyticalStoreTimeToLiveInSeconds
-                },
-                parameters.Throughput,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-        if (response.StatusCode == HttpStatusCode.Conflict)
-        {
-            return false;
-        }
+       await wrapper.Client.GetDatabase(wrapper._databaseId).CreateCollectionAsync(parameters.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
-        return response.StatusCode == HttpStatusCode.Created;
+        return  true;
     }
 
     /// <summary>
@@ -253,28 +231,21 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetContainer(parameters.ContainerId);
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JToken>(parameters.ContainerId);
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
         var partitionKey = CreatePartitionKey(entry);
-
-        var response = await container.CreateItemStreamAsync(
-                stream,
-                partitionKey == null ? PartitionKey.None : new PartitionKey(partitionKey),
-                itemRequestOptions,
-                cancellationToken)
+       await container.InsertOneAsync(itemRequestOptions.ToJson(),  new InsertOneOptions() {  BypassDocumentValidation=true}, cancellationToken)
             .ConfigureAwait(false);
 
         wrapper._commandLogger.ExecutedCreateItem(
-            response.Diagnostics.GetClientElapsedTime(),
-            response.Headers.RequestCharge,
-            response.Headers.ActivityId,
+             TimeSpan.Zero,
+         0,
+          "",
             parameters.Document["id"].ToString(),
             parameters.ContainerId,
             partitionKey);
 
-        ProcessResponse(response, entry);
-
-        return response.StatusCode == HttpStatusCode.Created;
+        return true;
     }
 
     /// <summary>
@@ -325,29 +296,23 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetContainer(parameters.ContainerId);
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JObject>(parameters.ContainerId);
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
         var partitionKey = CreatePartitionKey(entry);
-
-        using var response = await container.ReplaceItemStreamAsync(
-                stream,
-                parameters.ResourceId,
-                partitionKey == null ? PartitionKey.None : new PartitionKey(partitionKey),
-                itemRequestOptions,
-                cancellationToken)
-            .ConfigureAwait(false);
+        var v = itemRequestOptions?.IfMatchEtag?.ToString();
+          var response = await container.ReplaceOneAsync(f => f.GetValue(partitionKey).Value<string>() ==v , parameters.Document, cancellationToken: cancellationToken).ConfigureAwait(false); 
+           
 
         wrapper._commandLogger.ExecutedReplaceItem(
-            response.Diagnostics.GetClientElapsedTime(),
-            response.Headers.RequestCharge,
-            response.Headers.ActivityId,
+            TimeSpan.Zero,
+            1,
+            "",
             parameters.ResourceId,
             parameters.ContainerId,
             partitionKey);
 
-        ProcessResponse(response, entry);
 
-        return response.StatusCode == HttpStatusCode.OK;
+        return response.IsAcknowledged;
     }
 
     /// <summary>
@@ -360,11 +325,11 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         string containerId,
         string documentId,
         IUpdateEntry entry)
-        => _executionStrategy.Execute((containerId, documentId, entry, this), DeleteItemOnce, null);
+        => _executionStrategy.Execute(new MongoParameter(containerId, documentId, entry, this), DeleteItemOnce, null);
 
     private static bool DeleteItemOnce(
         DbContext context,
-        (string ContainerId, string DocumentId, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters)
+        MongoParameter parameters)
         => DeleteItemOnceAsync(context, parameters).GetAwaiter().GetResult();
 
     /// <summary>
@@ -378,38 +343,33 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         string documentId,
         IUpdateEntry entry,
         CancellationToken cancellationToken = default)
-        => _executionStrategy.ExecuteAsync((containerId, documentId, entry, this), DeleteItemOnceAsync, null, cancellationToken);
+        => _executionStrategy.ExecuteAsync(new MongoParameter(containerId, documentId, entry, this), DeleteItemOnceAsync, null, cancellationToken);
 
     private static async Task<bool> DeleteItemOnceAsync(
         DbContext? _,
-        (string ContainerId, string ResourceId, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
+        MongoParameter parameters,
         CancellationToken cancellationToken = default)
     {
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var items = wrapper.Client.GetDatabase(wrapper._databaseId).GetContainer(parameters.ContainerId);
+        var items = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>( parameters.ColletionName);
 
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
         var partitionKey = CreatePartitionKey(entry);
 
-        using var response = await items.DeleteItemStreamAsync(
-                parameters.ResourceId,
-                partitionKey == null ? PartitionKey.None : new PartitionKey(partitionKey),
-                itemRequestOptions,
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+          var response = await items.DeleteOneAsync(bd => bd.Any(e => e.Name == partitionKey && e.Value == itemRequestOptions.IfMatchEtag), cancellationToken).ConfigureAwait(false);
+             
 
         wrapper._commandLogger.ExecutedDeleteItem(
-            response.Diagnostics.GetClientElapsedTime(),
-            response.Headers.RequestCharge,
-            response.Headers.ActivityId,
-            parameters.ResourceId,
-            parameters.ContainerId,
+            TimeSpan.Zero,
+           response.DeletedCount,
+           "" ,
+            parameters.TableName,
+            parameters.ColletionName,
             partitionKey);
 
-        ProcessResponse(response, entry);
 
-        return response.StatusCode == HttpStatusCode.NoContent;
+        return response.DeletedCount==1 ;
     }
 
     private static ItemRequestOptions? CreateItemRequestOptions(IUpdateEntry entry, bool? enableContentResponseOnWrite)
@@ -454,7 +414,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             }
         }
 
-        return new ItemRequestOptions { IfMatchEtag = (string?)etag, EnableContentResponseOnWrite = enabledContentResponse };
+        return new ItemRequestOptions { IfMatchEtag = BsonValue.Create( etag), EnableContentResponseOnWrite = enabledContentResponse };
     }
 
     private static string? CreatePartitionKey(IUpdateEntry entry)
@@ -476,29 +436,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         return (string?)partitionKey;
     }
 
-    private static void ProcessResponse(ResponseMessage response, IUpdateEntry entry)
-    {
-        response.EnsureSuccessStatusCode();
-        var etagProperty = entry.EntityType.GetETagProperty();
-        if (etagProperty != null && entry.EntityState != EntityState.Deleted)
-        {
-            entry.SetStoreGeneratedValue(etagProperty, response.Headers.ETag);
-        }
-
-        var jObjectProperty = entry.EntityType.FindProperty(StoreKeyConvention.JObjectPropertyName);
-        if (jObjectProperty != null
-            && jObjectProperty.ValueGenerated == ValueGenerated.OnAddOrUpdate
-            && response.Content != null)
-        {
-            using var responseStream = response.Content;
-            using var reader = new StreamReader(responseStream);
-            using var jsonReader = new JsonTextReader(reader);
-
-            var createdDocument = Serializer.Deserialize<JObject>(jsonReader);
-
-            entry.SetStoreGeneratedValue(jObjectProperty, createdDocument);
-        }
-    }
+  
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -548,9 +486,9 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         var response = _executionStrategy.Execute((containerId, partitionKey, resourceId, this), CreateSingleItemQuery, null);
 
         _commandLogger.ExecutedReadItem(
-            response.Diagnostics.GetClientElapsedTime(),
-            response.Headers.RequestCharge,
-            response.Headers.ActivityId,
+             TimeSpan.Zero,
+            0,
+            response.RequestId.ToString(),
             resourceId,
             containerId,
             partitionKey);
@@ -580,9 +518,9 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             .ConfigureAwait(false);
 
         _commandLogger.ExecutedReadItem(
-            response.Diagnostics.GetClientElapsedTime(),
-            response.Headers.RequestCharge,
-            response.Headers.ActivityId,
+              TimeSpan.Zero,
+            0,
+            response.RequestId.ToString(),
             resourceId,
             containerId,
             partitionKey);
@@ -600,31 +538,20 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         (string ContainerId, string? PartitionKey, string ResourceId, MongoDBClientWrapper Wrapper) parameters,
         CancellationToken cancellationToken = default)
     {
-        var (containerId, partitionKey, resourceId, wrapper) = parameters;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetContainer(containerId);
+        //var (containerId, partitionKey, resourceId, wrapper) = parameters;
+        //var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JToken>(containerId);
 
-        return container.ReadItemStreamAsync(
-            resourceId,
-            string.IsNullOrEmpty(partitionKey) ? PartitionKey.None : new PartitionKey(partitionKey),
-            cancellationToken: cancellationToken);
+        // var v= container.
+        // var rm=new ResponseMessage() {  MessageType= MongoDBMessageType.Query}
+
+       throw new NotImplementedException();
     }
 
     private static JObject? JObjectFromReadItemResponseMessage(ResponseMessage responseMessage)
     {
-        if (responseMessage.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+        ;
 
-        responseMessage.EnsureSuccessStatusCode();
-
-        var responseStream = responseMessage.Content;
-        using var reader = new StreamReader(responseStream);
-        using var jsonReader = new JsonTextReader(reader);
-
-        var jObject = Serializer.Deserialize<JObject>(jsonReader);
-
-        return new JObject(new JProperty("c", jObject));
+        return new JObject();
     }
 
     /// <summary>
@@ -638,22 +565,22 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         string? partitionKey,
         MongoDBSqlQuery query)
     {
-        var container = Client.GetDatabase(_databaseId).GetContainer(containerId);
-        var queryDefinition = new QueryDefinition(query.Query);
-
-        queryDefinition = query.Parameters
-            .Aggregate(
-                queryDefinition,
-                (current, parameter) => current.WithParameter(parameter.Name, parameter.Value));
-
+        var container = Client.GetDatabase(_databaseId).GetCollection<JObject>(containerId);
+        var queryDefinition =  ( FilterDefinition<JObject>)query.Query ;
+       
+        container.Find(queryDefinition);
+        //queryDefinition = query.Parameters
+        //    .Aggregate(
+        //        queryDefinition,
+        //        (current, parameter) => current.n(parameter.Name, parameter.Value));
         if (string.IsNullOrEmpty(partitionKey))
         {
-            return container.GetItemQueryStreamIterator(queryDefinition);
+            return (FeedIterator)container.Find(queryDefinition);
         }
 
-        var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey(partitionKey) };
+    //    var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey(partitionKey) };
 
-        return container.GetItemQueryStreamIterator(queryDefinition, requestOptions: queryRequestOptions);
+        return (FeedIterator)container.Find(queryDefinition);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -756,25 +683,25 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
                 {
                     _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
 
-                    if (!_query.HasMoreResults)
+                    if (!_query.Any())
                     {
                         _current = null;
                         return false;
                     }
 
-                    _responseMessage = _query.ReadNextAsync().GetAwaiter().GetResult();
+                    //_responseMessage = _query.ReadNextAsync().GetAwaiter().GetResult();
 
-                    _MongoDBClientWrapper._commandLogger.ExecutedReadNext(
-                        _responseMessage.Diagnostics.GetClientElapsedTime(),
-                        _responseMessage.Headers.RequestCharge,
-                        _responseMessage.Headers.ActivityId,
-                        _containerId,
-                        _partitionKey,
-                        _MongoDBSqlQuery);
+                    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
+                    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
+                    //    _responseMessage.Headers.RequestCharge,
+                    //    _responseMessage.Headers.ActivityId,
+                    //    _containerId,
+                    //    _partitionKey,
+                    //    _MongoDBSqlQuery);
 
-                    _responseMessage.EnsureSuccessStatusCode();
+                    //_responseMessage.EnsureSuccessStatusCode();
 
-                    _responseStream = _responseMessage.Content;
+                    //_responseStream = _responseMessage.Content;
                     _reader = new StreamReader(_responseStream);
                     _jsonReader = CreateJsonReader(_reader);
                 }
@@ -804,7 +731,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             {
                 ResetRead();
 
-                _responseMessage?.Dispose();
+               // _responseMessage?.Dispose();
                 _responseMessage = null;
             }
 
@@ -872,25 +799,25 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
                 {
                     _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
 
-                    if (!_query.HasMoreResults)
-                    {
-                        _current = null;
-                        return false;
-                    }
+                    //if (!_query.HasMoreResults)
+                    //{
+                    //    _current = null;
+                    //    return false;
+                    //}
 
-                    _responseMessage = await _query.ReadNextAsync(_cancellationToken).ConfigureAwait(false);
+                    //_responseMessage = await _query.ReadNextAsync(_cancellationToken).ConfigureAwait(false);
 
-                    _MongoDBClientWrapper._commandLogger.ExecutedReadNext(
-                        _responseMessage.Diagnostics.GetClientElapsedTime(),
-                        _responseMessage.Headers.RequestCharge,
-                        _responseMessage.Headers.ActivityId,
-                        _containerId,
-                        _partitionKey,
-                        _MongoDBSqlQuery);
+                    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
+                    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
+                    //    _responseMessage.Headers.RequestCharge,
+                    //    _responseMessage.Headers.ActivityId,
+                    //    _containerId,
+                    //    _partitionKey,
+                    //    _MongoDBSqlQuery);
 
-                    _responseMessage.EnsureSuccessStatusCode();
+                    //_responseMessage.EnsureSuccessStatusCode();
 
-                    _responseStream = _responseMessage.Content;
+                    //_responseStream = _responseMessage.Content;
                     _reader = new StreamReader(_responseStream);
                     _jsonReader = CreateJsonReader(_reader);
                 }
@@ -920,9 +847,25 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             {
                 await ResetReadAsync().ConfigureAwait(false);
 
-                await _responseMessage.DisposeAsyncIfAvailable().ConfigureAwait(false);
+               // await _responseMessage.DisposeAsyncIfAvailable().ConfigureAwait(false);
                 _responseMessage = null;
             }
         }
+    }
+}
+
+internal record struct MongoParameter
+{
+   public  string ColletionName;
+    public string TableName;
+    public IUpdateEntry Entry;
+    public MongoDBClientWrapper Wrapper;
+     
+    public MongoParameter(string colletionName, string tableName, IUpdateEntry entry, MongoDBClientWrapper mongoDBClientWrapper) : this()
+    {
+        Entry = entry;
+        ColletionName = colletionName;
+        TableName = tableName;
+        Wrapper= mongoDBClientWrapper;
     }
 }

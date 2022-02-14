@@ -21,8 +21,8 @@ public static class MongoDBDatabaseFacadeExtensions
     ///     See <see href="https://aka.ms/efcore-docs-MongoDB">Accessing Azure MongoDB DB with EF Core</see> for more information and examples.
     /// </remarks>
     /// <param name="databaseFacade">The <see cref="DatabaseFacade" /> for the context.</param>
-    /// <returns>The <see cref="CosmosClient" /></returns>
-    public static CosmosClient GetMongoDBClient(this DatabaseFacade databaseFacade)
+    /// <returns>The <see cref="MongoClient" /></returns>
+    public static MongoClient GetMongoDBClient(this DatabaseFacade databaseFacade)
         => GetService<ISingletonMongoDBClientWrapper>(databaseFacade).Client;
 
     private static TService GetService<TService>(IInfrastructure<IServiceProvider> databaseFacade)
