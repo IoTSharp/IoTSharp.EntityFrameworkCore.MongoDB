@@ -1,0 +1,8 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "src\\EFCore.Cosmos\\EFCore.Cosmos.csproj"
+    ]
+  }
+}
