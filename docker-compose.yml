@@ -1,0 +1,49 @@
+version: '3.4'
+
+services:
+  mongodb:
+    image: mongo:latest
+    restart: always
+    container_name: mongodb
+    volumes:
+      - ./data/mongodb/db:/data/db
+      - ./data/mongodb/log:/var/log/mongodb
+    ports:
+      - 27017:27017
+    environment:
+      TZ: "Asia/Shanghai"
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: kissme
+    networks:
+      - mongo-network
+
+
+  sample.console:
+    image: ${DOCKER_REGISTRY-}sampleconsole
+    build:
+      context: .
+      dockerfile: src/Sample.Console/Dockerfile
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - mongo-network
+
+
+  sample:
+    image: ${DOCKER_REGISTRY-}sample
+    build:
+      context: .
+      dockerfile: src/Sample/Dockerfile
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    networks:
+      - mongo-network
+
+networks: 
+  mongo-network:
+      driver:  bridge
+

@@ -3,8 +3,7 @@
 
 using System.Collections;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Query.Internal;
 
@@ -90,11 +89,11 @@ public class SqlConstantExpression : SqlExpression
         {
             var jToken = GenerateJToken(Value, TypeMapping);
 
-            expressionPrinter.Append(jToken == null ? "null" : jToken.ToString(Formatting.None));
+            expressionPrinter.Append(jToken == null ? "null" : jToken.ToString());
         }
     }
 
-    private JToken? GenerateJToken(object? value, CoreTypeMapping? typeMapping)
+    private BsonValue? GenerateJToken(object? value, CoreTypeMapping? typeMapping)
     {
         var mappingClrType = typeMapping?.ClrType.UnwrapNullableType() ?? Type;
         if (value?.GetType().IsInteger() == true
@@ -114,7 +113,7 @@ public class SqlConstantExpression : SqlExpression
             return null;
         }
 
-        return (value as JToken) ?? JToken.FromObject(value, MongoDBClientWrapper.Serializer);
+        return (value as BsonValue) ?? BsonValue.Create(value);
     }
 
     /// <summary>

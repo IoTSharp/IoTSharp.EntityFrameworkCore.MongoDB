@@ -5,7 +5,7 @@ using System.Collections;
 using System.Text;
 using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 #nullable disable
 
@@ -24,7 +24,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
         private readonly MongoDBQueryContext _MongoDBQueryContext;
         private readonly ISqlExpressionFactory _sqlExpressionFactory;
         private readonly SelectExpression _selectExpression;
-        private readonly Func<MongoDBQueryContext, JObject, T> _shaper;
+        private readonly Func<MongoDBQueryContext, BsonDocument, T> _shaper;
         private readonly IQuerySqlGeneratorFactory _querySqlGeneratorFactory;
         private readonly Type _contextType;
         private readonly string _partitionKey;
@@ -37,7 +37,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             ISqlExpressionFactory sqlExpressionFactory,
             IQuerySqlGeneratorFactory querySqlGeneratorFactory,
             SelectExpression selectExpression,
-            Func<MongoDBQueryContext, JObject, T> shaper,
+            Func<MongoDBQueryContext, BsonDocument, T> shaper,
             Type contextType,
             string partitionKeyFromExtension,
             bool standAloneStateManager,
@@ -106,7 +106,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             private readonly QueryingEnumerable<T> _queryingEnumerable;
             private readonly MongoDBQueryContext _MongoDBQueryContext;
             private readonly SelectExpression _selectExpression;
-            private readonly Func<MongoDBQueryContext, JObject, T> _shaper;
+            private readonly Func<MongoDBQueryContext, BsonDocument, T> _shaper;
             private readonly Type _contextType;
             private readonly string _partitionKey;
             private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _queryLogger;
@@ -114,7 +114,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             private readonly IConcurrencyDetector _concurrencyDetector;
            // private readonly IExceptionDetector _exceptionDetector;
 
-            private IEnumerator<JObject> _enumerator;
+            private IEnumerator<BsonDocument> _enumerator;
 
             public Enumerator(QueryingEnumerable<T> queryingEnumerable)
             {
@@ -205,7 +205,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             private readonly QueryingEnumerable<T> _queryingEnumerable;
             private readonly MongoDBQueryContext _MongoDBQueryContext;
             private readonly SelectExpression _selectExpression;
-            private readonly Func<MongoDBQueryContext, JObject, T> _shaper;
+            private readonly Func<MongoDBQueryContext, BsonDocument, T> _shaper;
             private readonly Type _contextType;
             private readonly string _partitionKey;
             private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _queryLogger;
@@ -214,7 +214,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             private readonly IConcurrencyDetector _concurrencyDetector;
           //  private readonly IExceptionDetector _exceptionDetector;
 
-            private IAsyncEnumerator<JObject> _enumerator;
+            private IAsyncEnumerator<BsonDocument> _enumerator;
 
             public AsyncEnumerator(QueryingEnumerable<T> queryingEnumerable, CancellationToken cancellationToken)
             {

@@ -7,7 +7,7 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 #nullable disable
 
@@ -18,17 +18,17 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
     private abstract class MongoDBProjectionBindingRemovingExpressionVisitorBase : ExpressionVisitor
     {
         private static readonly MethodInfo GetItemMethodInfo
-            = typeof(JObject).GetRuntimeProperties()
+            = typeof(BsonDocument).GetRuntimeProperties()
                 .Single(pi => pi.Name == "Item" && pi.GetIndexParameters()[0].ParameterType == typeof(string))
                 .GetMethod;
 
         private static readonly PropertyInfo JTokenTypePropertyInfo
-            = typeof(JToken).GetRuntimeProperties()
-                .Single(mi => mi.Name == nameof(JToken.Type));
+            = typeof(BsonValue).GetRuntimeProperties()
+                .Single(mi => mi.Name == nameof(BsonValue.BsonType));
 
-        private static readonly MethodInfo JTokenToObjectWithSerializerMethodInfo
-            = typeof(JToken).GetRuntimeMethods()
-                .Single(mi => mi.Name == nameof(JToken.ToObject) && mi.GetParameters().Length == 1 && mi.IsGenericMethodDefinition);
+        //private static readonly MethodInfo JTokenToObjectWithSerializerMethodInfo
+        //    = typeof(BsonValue).GetRuntimeMethods()
+        //        .Single(mi => mi.Name == nameof(BsonDocument.to) && mi.GetParameters().Length == 1 && mi.IsGenericMethodDefinition);
 
         private static readonly MethodInfo CollectionAccessorAddMethodInfo
             = typeof(IClrCollectionAccessor).GetTypeInfo()
@@ -58,7 +58,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
 
         private static readonly MethodInfo ToObjectWithSerializerMethodInfo
             = typeof(MongoDBProjectionBindingRemovingExpressionVisitorBase)
-                .GetRuntimeMethods().Single(mi => mi.Name == nameof(SafeToObjectWithSerializer));
+                .GetRuntimeMethods().Single(mi => mi.Name == nameof(SafeToObject));
 
         protected MongoDBProjectionBindingRemovingExpressionVisitorBase(
             ParameterExpression jObjectParameter,
@@ -74,8 +74,8 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             {
                 if (binaryExpression.Left is ParameterExpression parameterExpression)
                 {
-                    if (parameterExpression.Type == typeof(JObject)
-                        || parameterExpression.Type == typeof(JArray))
+                    if (parameterExpression.Type == typeof(BsonDocument)
+                        || parameterExpression.Type == typeof(BsonArray))
                     {
                         string storeName = null;
 
@@ -181,7 +181,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
 
                     innerExpression = Expression.Convert(
                         CreateReadJTokenExpression(_jObjectParameter, projection.Alias),
-                        typeof(JObject));
+                        typeof(BsonDocument));
                 }
                 else
                 {
@@ -250,7 +250,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                     }
 
                     var jArray = _projectionBindings[objectArrayProjection];
-                    var jObjectParameter = Expression.Parameter(typeof(JObject), jArray.Name + "Object");
+                    var jObjectParameter = Expression.Parameter(typeof(BsonDocument), jArray.Name + "Object");
                     var ordinalParameter = Expression.Parameter(typeof(int), jArray.Name + "Ordinal");
 
                     var accessExpression = objectArrayProjection.InnerProjection.AccessExpression;
@@ -265,9 +265,9 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                     innerShaper = AddIncludes(innerShaper);
 
                     var entities = Expression.Call(
-                        EnumerableMethods.SelectWithOrdinal.MakeGenericMethod(typeof(JObject), innerShaper.Type),
+                        EnumerableMethods.SelectWithOrdinal.MakeGenericMethod(typeof(BsonDocument), innerShaper.Type),
                         Expression.Call(
-                            EnumerableMethods.Cast.MakeGenericMethod(typeof(JObject)),
+                            EnumerableMethods.Cast.MakeGenericMethod(typeof(BsonDocument)),
                             jArray),
                         Expression.Lambda(innerShaper, jObjectParameter, ordinalParameter));
 
@@ -663,14 +663,14 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             else if (jObjectExpression is RootReferenceExpression rootReferenceExpression)
             {
                 innerExpression = CreateGetValueExpression(
-                    _jObjectParameter, rootReferenceExpression.Alias, typeof(JObject));
+                    _jObjectParameter, rootReferenceExpression.Alias, typeof(BsonDocument));
             }
             else if (jObjectExpression is ObjectAccessExpression objectAccessExpression)
             {
                 var innerAccessExpression = objectAccessExpression.AccessExpression;
 
                 innerExpression = CreateGetValueExpression(
-                    innerAccessExpression, ((IAccessExpression)innerAccessExpression).Name, typeof(JObject));
+                    innerAccessExpression, ((IAccessExpression)innerAccessExpression).Name, typeof(BsonDocument));
             }
 
             var jTokenExpression = CreateReadJTokenExpression(innerExpression, storeName);
@@ -679,15 +679,13 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             var converter = typeMapping?.Converter;
             if (converter != null)
             {
-                var jTokenParameter = Expression.Parameter(typeof(JToken));
-
+                var jTokenParameter = Expression.Parameter(typeof(BsonValue));
+                //TODO:  类型转换
                 var body
                     = ReplacingExpressionVisitor.Replace(
                         converter.ConvertFromProviderExpression.Parameters.Single(),
                         Expression.Call(
-                            jTokenParameter,
-                            JTokenToObjectWithSerializerMethodInfo.MakeGenericMethod(converter.ProviderClrType),
-                            Expression.Constant(MongoDBClientWrapper.Serializer)),
+                            jTokenParameter,                 null),
                         converter.ConvertFromProviderExpression.Body);
 
                 if (body.Type != type)
@@ -715,10 +713,10 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
 
                 body = Expression.Condition(
                     Expression.OrElse(
-                        Expression.Equal(jTokenParameter, Expression.Default(typeof(JToken))),
+                        Expression.Equal(jTokenParameter, Expression.Default(typeof(BsonValue))),
                         Expression.Equal(
                             Expression.MakeMemberAccess(jTokenParameter, JTokenTypePropertyInfo),
-                            Expression.Constant(JTokenType.Null))),
+                            Expression.Constant(BsonNull.Value))),
                     replaceExpression,
                     body);
 
@@ -738,16 +736,65 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
         }
 
         private static Expression ConvertJTokenToType(Expression jTokenExpression, Type type)
-            => type == typeof(JToken)
+            => type == typeof(BsonValue)
                 ? jTokenExpression
                 : Expression.Call(
                     ToObjectWithSerializerMethodInfo.MakeGenericMethod(type),
                     jTokenExpression);
 
-        private static T SafeToObject<T>(JToken token)
-            => token == null || token.Type == JTokenType.Null ? default : token.ToObject<T>();
+        private static T SafeToObject<T>(BsonValue token)
+        {
+            object t = default;
+            TypeCode typeCode = Type.GetTypeCode(typeof(T));
+            switch (typeCode)
+            {
+                case TypeCode.Empty:
+                    break;
+                case TypeCode.Object:
+                    break;
+                case TypeCode.DBNull:
+                    break;
+                case TypeCode.Boolean:
+                    t = token.ToBoolean();
+                    break;
+                case TypeCode.Char:
+                    break;
+                case TypeCode.SByte:
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.UInt16:
+                    t = token.ToInt32();
+                    break;
+                case TypeCode.Int32:
+                case TypeCode.UInt32:
+                    t = token.ToInt32();
+                    break;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    t = token.ToInt64();
+                    break;
+                case TypeCode.Single:
+                    t = token.ToDouble();
+                    break;
+                case TypeCode.Double:
+                    t = token.ToDouble();
+                    break;
+                case TypeCode.Decimal:
+                    t = token.ToDecimal();
+                    break;
+                case TypeCode.DateTime:
+                    t = token.ToLocalTime();
+                    break;
+                case TypeCode.String:
+                    t = token.ToString();
+                    break;
+                default:
+                    break;
+            }
+            return (T)t;
+        }
 
-        private static T SafeToObjectWithSerializer<T>(JToken token)
-            => token == null || token.Type == JTokenType.Null ? default : token.ToObject<T>(MongoDBClientWrapper.Serializer);
+      //  private static T SafeToObjectWithSerializer<T>(BsonValue token) 
+       
     }
 }

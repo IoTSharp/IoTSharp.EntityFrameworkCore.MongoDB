@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
 
 #nullable disable
 
@@ -49,7 +48,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor : ShapedQueryC
     /// </summary>
     protected override Expression VisitShapedQuery(ShapedQueryExpression shapedQueryExpression)
     {
-        var jObjectParameter = Expression.Parameter(typeof(JObject), "jObject");
+        var jObjectParameter = Expression.Parameter(typeof(BsonDocument), "jObject");
 
         var shaperBody = shapedQueryExpression.ShaperExpression;
         shaperBody = new JObjectInjectingExpressionVisitor().Visit(shaperBody);

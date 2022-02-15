@@ -4,7 +4,6 @@
 using IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.ValueGeneration;
-using Newtonsoft.Json.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
@@ -150,7 +149,7 @@ public class StoreKeyConvention :
         if (entityType.BaseType == null
             && !entityType.IsKeyless)
         {
-            var jObjectProperty = entityTypeBuilder.Property(typeof(JObject), JObjectPropertyName);
+            var jObjectProperty = entityTypeBuilder.Property(typeof(BsonDocument), JObjectPropertyName);
             jObjectProperty?.ToJsonProperty("");
             jObjectProperty?.ValueGenerated(ValueGenerated.OnAddOrUpdate);
         }

@@ -3,9 +3,7 @@
 
 using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
+ 
 #nullable disable
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Query.Internal;
@@ -434,10 +432,10 @@ public class QuerySqlGenerator : SqlExpressionVisitor
     {
         var jToken = GenerateJToken(value, typeMapping);
 
-        return jToken is null ? "null" : jToken.ToString(Formatting.None);
+        return jToken is null ? "null" : jToken.ToString();
     }
 
-    private static JToken GenerateJToken(object value, CoreTypeMapping typeMapping)
+    private static BsonValue GenerateJToken(object value, CoreTypeMapping typeMapping)
     {
         if (value?.GetType().IsInteger() == true)
         {
@@ -457,7 +455,7 @@ public class QuerySqlGenerator : SqlExpressionVisitor
 
         return value == null
             ? null
-            : (value as JToken) ?? JToken.FromObject(value, MongoDBClientWrapper.Serializer);
+            : (value as BsonValue) ?? BsonValue.Create(value);
     }
 
     /// <summary>

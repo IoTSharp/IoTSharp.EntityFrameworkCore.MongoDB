@@ -11,9 +11,9 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Infrastructure.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
 using MongoDB.Driver.Core.WireProtocol.Messages;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 
@@ -31,7 +31,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static readonly JsonSerializer Serializer;
+   // public static readonly JsonSerializer Serializer;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -39,7 +39,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public static readonly string DefaultKey = "__Key";
+    public static readonly string DefaultKey = "_id";
 
     private readonly ISingletonMongoDBClientWrapper _singletonWrapper;
     private readonly string _databaseId;
@@ -49,10 +49,10 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
     static MongoDBClientWrapper()
     {
-        Serializer = JsonSerializer.Create();
-        Serializer.Converters.Add(new ByteArrayConverter());
-        Serializer.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-        Serializer.DateParseHandling = DateParseHandling.None;
+        //Serializer = JsonSerializer.Create();
+        //Serializer.Converters.Add(new ByteArrayConverter());
+        //Serializer.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+        //Serializer.DateParseHandling = DateParseHandling.None;
     }
 
     /// <summary>
@@ -193,13 +193,15 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     /// </summary>
     public virtual bool CreateItem(
         string containerId,
-        JToken document,
+        BsonDocument document,
         IUpdateEntry entry)
         => _executionStrategy.Execute((containerId, document, entry, this), CreateItemOnce, null);
+  
+  
 
     private static bool CreateItemOnce(
         DbContext context,
-        (string ContainerId, JToken Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters)
+        (string ContainerId, BsonDocument Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters)
         => CreateItemOnceAsync(context, parameters).GetAwaiter().GetResult();
 
     /// <summary>
@@ -210,31 +212,26 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     /// </summary>
     public virtual Task<bool> CreateItemAsync(
         string containerId,
-        JToken document,
+        BsonDocument document,
         IUpdateEntry updateEntry,
         CancellationToken cancellationToken = default)
         => _executionStrategy.ExecuteAsync((containerId, document, updateEntry, this), CreateItemOnceAsync, null, cancellationToken);
 
+
+   
+
     private static async Task<bool> CreateItemOnceAsync(
         DbContext _,
-        (string ContainerId, JToken Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
+        (string ContainerId, BsonDocument Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
         CancellationToken cancellationToken = default)
     {
-        var stream = new MemoryStream();
-        await using var __ = stream.ConfigureAwait(false);
-        var writer = new StreamWriter(stream, new UTF8Encoding(), bufferSize: 1024, leaveOpen: false);
-        await using var ___ = writer.ConfigureAwait(false);
-
-        using var jsonWriter = new JsonTextWriter(writer);
-        Serializer.Serialize(jsonWriter, parameters.Document);
-        await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
-
+        
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JToken>(parameters.ContainerId);
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>(parameters.ContainerId);
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
         var partitionKey = CreatePartitionKey(entry);
-       await container.InsertOneAsync(itemRequestOptions.ToJson(),  new InsertOneOptions() {  BypassDocumentValidation=true}, cancellationToken)
+       await container.InsertOneAsync(parameters.Document,  new InsertOneOptions() {  BypassDocumentValidation=true}, cancellationToken)
             .ConfigureAwait(false);
 
         wrapper._commandLogger.ExecutedCreateItem(
@@ -257,13 +254,13 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     public virtual bool ReplaceItem(
         string collectionId,
         string documentId,
-        JObject document,
+        BsonDocument document,
         IUpdateEntry entry)
         => _executionStrategy.Execute((collectionId, documentId, document, entry, this), ReplaceItemOnce, null);
 
     private static bool ReplaceItemOnce(
         DbContext context,
-        (string ContainerId, string ItemId, JObject Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters)
+        (string ContainerId, string ItemId, BsonDocument Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters)
         => ReplaceItemOnceAsync(context, parameters).GetAwaiter().GetResult();
 
     /// <summary>
@@ -275,7 +272,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     public virtual Task<bool> ReplaceItemAsync(
         string collectionId,
         string documentId,
-        JObject document,
+        BsonDocument document,
         IUpdateEntry updateEntry,
         CancellationToken cancellationToken = default)
         => _executionStrategy.ExecuteAsync(
@@ -283,24 +280,24 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
     private static async Task<bool> ReplaceItemOnceAsync(
         DbContext _,
-        (string ContainerId, string ResourceId, JObject Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
+        (string ContainerId, string ResourceId, BsonDocument Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
         CancellationToken cancellationToken = default)
     {
-        var stream = new MemoryStream();
-        await using var __ = stream.ConfigureAwait(false);
-        var writer = new StreamWriter(stream, new UTF8Encoding(), bufferSize: 1024, leaveOpen: false);
-        await using var ___ = writer.ConfigureAwait(false);
-        using var jsonWriter = new JsonTextWriter(writer);
-        Serializer.Serialize(jsonWriter, parameters.Document);
-        await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+        //var stream = new MemoryStream();
+        //await using var __ = stream.ConfigureAwait(false);
+        //var writer = new StreamWriter(stream, new UTF8Encoding(), bufferSize: 1024, leaveOpen: false);
+        //await using var ___ = writer.ConfigureAwait(false);
+        //using var jsonWriter = new JsonWriter(writer);
+        //jsonWriter.WriteSta parameters.Document);
+        //await jsonWriter.Flush();
 
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JObject>(parameters.ContainerId);
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>(parameters.ContainerId);
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
         var partitionKey = CreatePartitionKey(entry);
         var v = itemRequestOptions?.IfMatchEtag?.ToString();
-          var response = await container.ReplaceOneAsync(f => f.GetValue(partitionKey).Value<string>() ==v , parameters.Document, cancellationToken: cancellationToken).ConfigureAwait(false); 
+          var response = await container.ReplaceOneAsync(bs=>((ObjectId)bs)== ObjectId.Parse( partitionKey), parameters.Document, cancellationToken: cancellationToken).ConfigureAwait(false); 
            
 
         wrapper._commandLogger.ExecutedReplaceItem(
@@ -444,7 +441,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual IEnumerable<JObject> ExecuteSqlQuery(
+    public virtual IEnumerable<BsonDocument> ExecuteSqlQuery(
         string containerId,
         string? partitionKey,
         MongoDBSqlQuery query)
@@ -460,7 +457,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual IAsyncEnumerable<JObject> ExecuteSqlQueryAsync(
+    public virtual IAsyncEnumerable<BsonDocument> ExecuteSqlQueryAsync(
         string containerId,
         string? partitionKey,
         MongoDBSqlQuery query)
@@ -476,7 +473,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject? ExecuteReadItem(
+    public virtual BsonDocument? ExecuteReadItem(
         string containerId,
         string? partitionKey,
         string resourceId)
@@ -502,7 +499,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual async Task<JObject?> ExecuteReadItemAsync(
+    public virtual async Task<BsonDocument?> ExecuteReadItemAsync(
         string containerId,
         string? partitionKey,
         string resourceId,
@@ -547,11 +544,11 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
        throw new NotImplementedException();
     }
 
-    private static JObject? JObjectFromReadItemResponseMessage(ResponseMessage responseMessage)
+    private static BsonDocument? JObjectFromReadItemResponseMessage(ResponseMessage responseMessage)
     {
         ;
 
-        return new JObject();
+        return new BsonDocument();
     }
 
     /// <summary>
@@ -565,8 +562,8 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         string? partitionKey,
         MongoDBSqlQuery query)
     {
-        var container = Client.GetDatabase(_databaseId).GetCollection<JObject>(containerId);
-        var queryDefinition =  ( FilterDefinition<JObject>)query.Query ;
+        var container = Client.GetDatabase(_databaseId).GetCollection<BsonDocument>(containerId);
+        var queryDefinition =  ( FilterDefinition<BsonDocument>)query.Query ;
        
         container.Find(queryDefinition);
         //queryDefinition = query.Parameters
@@ -583,46 +580,61 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         return (FeedIterator)container.Find(queryDefinition);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static JsonTextReader CreateJsonReader(TextReader reader)
-    {
-        var jsonReader = new JsonTextReader(reader);
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //private static JsonTextReader CreateJsonReader(TextReader reader)
+    //{
+    //    var jsonReader =     BsonDocument.Parse(rea;
 
-        while (jsonReader.Read())
-        {
-            if (jsonReader.TokenType == JsonToken.StartObject)
-            {
-                while (jsonReader.Read())
-                {
-                    if (jsonReader.TokenType == JsonToken.StartArray)
-                    {
-                        return jsonReader;
-                    }
-                }
-            }
-        }
+    //    while (jsonReader.Read())
+    //    {
+    //        if (jsonReader.TokenType == JsonToken.StartObject)
+    //        {
+    //            while (jsonReader.Read())
+    //            {
+    //                if (jsonReader.TokenType == JsonToken.StartArray)
+    //                {
+    //                    return jsonReader;
+    //                }
+    //            }
+    //        }
+    //    }
 
-        return jsonReader;
-    }
+    //    return jsonReader;
+    //}
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool TryReadJObject(JsonTextReader jsonReader, [NotNullWhen(true)] out JObject? jObject)
-    {
-        jObject = null;
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //private static bool TryReadJObject(bson jsonReader, [NotNullWhen(true)] out BsonDocument? jObject)
+    //{
+    //    jObject = null;
 
-        while (jsonReader.Read())
-        {
-            if (jsonReader.TokenType == JsonToken.StartObject)
-            {
-                jObject = Serializer.Deserialize<JObject>(jsonReader);
-                return true;
-            }
-        }
+    //    while (jsonReader.Read())
+    //    {
+    //        if (jsonReader.TokenType == JsonToken.StartObject)
+    //        {
+    //            jObject = Serializer.Deserialize<BsonDocument>(jsonReader);
+    //            return true;
+    //        }
+    //    }
 
-        return false;
-    }
+    //    return false;
+    //}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //private static bool TryReadJObject(bson jsonReader, [NotNullWhen(true)] out BsonDocument? jObject)
+    //{
+    //    jObject = null;
 
-    private sealed class DocumentEnumerable : IEnumerable<JObject>
+    //    while (jsonReader.Read())
+    //    {
+    //        if (jsonReader.TokenType == JsonToken.StartObject)
+    //        {
+    //            jObject = Serializer.Deserialize<BsonDocument>(jsonReader);
+    //            return true;
+    //        }
+    //    }
+
+    //    return false;
+    //}
+
+    private sealed class DocumentEnumerable : IEnumerable<BsonDocument>
     {
         private readonly MongoDBClientWrapper _MongoDBClient;
         private readonly string _containerId;
@@ -641,24 +653,23 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             _MongoDBSqlQuery = MongoDBSqlQuery;
         }
 
-        public IEnumerator<JObject> GetEnumerator()
+        public IEnumerator<BsonDocument> GetEnumerator()
             => new Enumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
-        private sealed class Enumerator : IEnumerator<JObject>
+        private sealed class Enumerator : IEnumerator<BsonDocument>
         {
             private readonly MongoDBClientWrapper _MongoDBClientWrapper;
             private readonly string _containerId;
             private readonly string? _partitionKey;
             private readonly MongoDBSqlQuery _MongoDBSqlQuery;
 
-            private JObject? _current;
+            private BsonDocument? _current;
             private ResponseMessage? _responseMessage;
             private Stream? _responseStream;
             private StreamReader? _reader;
-            private JsonTextReader? _jsonReader;
 
             private FeedIterator? _query;
 
@@ -670,7 +681,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
                 _MongoDBSqlQuery = documentEnumerable._MongoDBSqlQuery;
             }
 
-            public JObject Current
+            public BsonDocument Current
                 => _current ?? throw new InvalidOperationException();
 
             object IEnumerator.Current
@@ -679,48 +690,46 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
-                if (_jsonReader == null)
-                {
-                    _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
+                //if (_jsonReader == null)
+                //{
+                //    _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
 
-                    if (!_query.Any())
-                    {
-                        _current = null;
-                        return false;
-                    }
+                //    if (!_query.Any())
+                //    {
+                //        _current = null;
+                //        return false;
+                //    }
 
-                    //_responseMessage = _query.ReadNextAsync().GetAwaiter().GetResult();
+                //    //_responseMessage = _query.ReadNextAsync().GetAwaiter().GetResult();
 
-                    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
-                    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
-                    //    _responseMessage.Headers.RequestCharge,
-                    //    _responseMessage.Headers.ActivityId,
-                    //    _containerId,
-                    //    _partitionKey,
-                    //    _MongoDBSqlQuery);
+                //    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
+                //    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
+                //    //    _responseMessage.Headers.RequestCharge,
+                //    //    _responseMessage.Headers.ActivityId,
+                //    //    _containerId,
+                //    //    _partitionKey,
+                //    //    _MongoDBSqlQuery);
 
-                    //_responseMessage.EnsureSuccessStatusCode();
+                //    //_responseMessage.EnsureSuccessStatusCode();
 
-                    //_responseStream = _responseMessage.Content;
-                    _reader = new StreamReader(_responseStream);
-                    _jsonReader = CreateJsonReader(_reader);
-                }
+                //    //_responseStream = _responseMessage.Content;
+                //    _reader = new StreamReader(_responseStream);
+                //    _jsonReader = CreateJsonReader(_reader);
+                //}
 
-                if (TryReadJObject(_jsonReader, out var jObject))
-                {
-                    _current = jObject;
-                    return true;
-                }
+                //if (TryReadJObject(_jsonReader, out var jObject))
+                //{
+                //    _current = jObject;
+                //    return true;
+                //}
 
-                ResetRead();
+                //ResetRead();
 
                 return MoveNext();
             }
 
             private void ResetRead()
             {
-                _jsonReader?.Close();
-                _jsonReader = null;
                 _reader?.Dispose();
                 _reader = null;
                 _responseStream?.Dispose();
@@ -740,7 +749,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         }
     }
 
-    private sealed class DocumentAsyncEnumerable : IAsyncEnumerable<JObject>
+    private sealed class DocumentAsyncEnumerable : IAsyncEnumerable<BsonDocument>
     {
         private readonly MongoDBClientWrapper _MongoDBClient;
         private readonly string _containerId;
@@ -759,10 +768,10 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             _MongoDBSqlQuery = MongoDBSqlQuery;
         }
 
-        public IAsyncEnumerator<JObject> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        public IAsyncEnumerator<BsonDocument> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new AsyncEnumerator(this, cancellationToken);
 
-        private sealed class AsyncEnumerator : IAsyncEnumerator<JObject>
+        private sealed class AsyncEnumerator : IAsyncEnumerator<BsonDocument>
         {
             private readonly MongoDBClientWrapper _MongoDBClientWrapper;
             private readonly string _containerId;
@@ -770,15 +779,14 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             private readonly MongoDBSqlQuery _MongoDBSqlQuery;
             private readonly CancellationToken _cancellationToken;
 
-            private JObject? _current;
+            private BsonDocument? _current;
             private ResponseMessage? _responseMessage;
             private Stream? _responseStream;
             private StreamReader? _reader;
-            private JsonTextReader? _jsonReader;
 
             private FeedIterator? _query;
 
-            public JObject Current
+            public BsonDocument Current
                 => _current ?? throw new InvalidOperationException();
 
             public AsyncEnumerator(DocumentAsyncEnumerable documentEnumerable, CancellationToken cancellationToken)
@@ -795,38 +803,38 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                if (_jsonReader == null)
-                {
-                    _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
+                //if (_jsonReader == null)
+                //{
+                //    _query ??= _MongoDBClientWrapper.CreateQuery(_containerId, _partitionKey, _MongoDBSqlQuery);
 
-                    //if (!_query.HasMoreResults)
-                    //{
-                    //    _current = null;
-                    //    return false;
-                    //}
+                //    //if (!_query.HasMoreResults)
+                //    //{
+                //    //    _current = null;
+                //    //    return false;
+                //    //}
 
-                    //_responseMessage = await _query.ReadNextAsync(_cancellationToken).ConfigureAwait(false);
+                //    //_responseMessage = await _query.ReadNextAsync(_cancellationToken).ConfigureAwait(false);
 
-                    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
-                    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
-                    //    _responseMessage.Headers.RequestCharge,
-                    //    _responseMessage.Headers.ActivityId,
-                    //    _containerId,
-                    //    _partitionKey,
-                    //    _MongoDBSqlQuery);
+                //    //_MongoDBClientWrapper._commandLogger.ExecutedReadNext(
+                //    //    _responseMessage.Diagnostics.GetClientElapsedTime(),
+                //    //    _responseMessage.Headers.RequestCharge,
+                //    //    _responseMessage.Headers.ActivityId,
+                //    //    _containerId,
+                //    //    _partitionKey,
+                //    //    _MongoDBSqlQuery);
 
-                    //_responseMessage.EnsureSuccessStatusCode();
+                //    //_responseMessage.EnsureSuccessStatusCode();
 
-                    //_responseStream = _responseMessage.Content;
-                    _reader = new StreamReader(_responseStream);
-                    _jsonReader = CreateJsonReader(_reader);
-                }
+                //    //_responseStream = _responseMessage.Content;
+                //    _reader = new StreamReader(_responseStream);
+                //    _jsonReader = CreateJsonReader(_reader);
+                //}
 
-                if (TryReadJObject(_jsonReader, out var jObject))
-                {
-                    _current = jObject;
-                    return true;
-                }
+                //if (TryReadJObject(_jsonReader, out var jObject))
+                //{
+                //    _current = jObject;
+                //    return true;
+                //}
 
                 await ResetReadAsync().ConfigureAwait(false);
 
@@ -835,8 +843,6 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
             private async Task ResetReadAsync()
             {
-                _jsonReader?.Close();
-                _jsonReader = null;
                 await _reader.DisposeAsyncIfAvailable().ConfigureAwait(false);
                 _reader = null;
                 await _responseStream.DisposeAsyncIfAvailable().ConfigureAwait(false);

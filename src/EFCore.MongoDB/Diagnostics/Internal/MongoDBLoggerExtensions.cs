@@ -5,8 +5,7 @@ using System.Globalization;
 using System.Text;
 using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 
 // ReSharper disable once CheckNamespace
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Diagnostics.Internal;
@@ -467,8 +466,8 @@ public static class MongoDBLoggerExtensions
 
         switch (parameterValue)
         {
-            case JToken jTokenValue:
-                builder.Append(jTokenValue.ToString(Formatting.None).Trim('"'));
+            case BsonValue jTokenValue:
+                builder.Append(jTokenValue.ToString()?.Trim('"'));
                 break;
             case DateTime dateTimeValue:
                 builder.Append(dateTimeValue.ToString("s"));

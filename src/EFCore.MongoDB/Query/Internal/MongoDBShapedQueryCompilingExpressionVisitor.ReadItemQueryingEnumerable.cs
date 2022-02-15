@@ -7,7 +7,7 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Internal;
-using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 #nullable disable
 
@@ -25,7 +25,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
     {
         private readonly MongoDBQueryContext _MongoDBQueryContext;
         private readonly ReadItemExpression _readItemExpression;
-        private readonly Func<MongoDBQueryContext, JObject, T> _shaper;
+        private readonly Func<MongoDBQueryContext, BsonDocument, T> _shaper;
         private readonly Type _contextType;
         private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _queryLogger;
         private readonly bool _standAloneStateManager;
@@ -34,7 +34,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
         public ReadItemQueryingEnumerable(
             MongoDBQueryContext MongoDBQueryContext,
             ReadItemExpression readItemExpression,
-            Func<MongoDBQueryContext, JObject, T> shaper,
+            Func<MongoDBQueryContext, BsonDocument, T> shaper,
             Type contextType,
             bool standAloneStateManager,
             bool threadSafetyChecksEnabled)
@@ -166,7 +166,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
         {
             private readonly MongoDBQueryContext _MongoDBQueryContext;
             private readonly ReadItemExpression _readItemExpression;
-            private readonly Func<MongoDBQueryContext, JObject, T> _shaper;
+            private readonly Func<MongoDBQueryContext, BsonDocument, T> _shaper;
             private readonly Type _contextType;
             private readonly IDiagnosticsLogger<DbLoggerCategory.Query> _queryLogger;
             private readonly bool _standAloneStateManager;
@@ -175,7 +175,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
             private readonly ReadItemQueryingEnumerable<T> _readItemEnumerable;
             private readonly CancellationToken _cancellationToken;
 
-            private JObject _item;
+            private BsonDocument _item;
             private bool _hasExecuted;
 
             public Enumerator(ReadItemQueryingEnumerable<T> readItemEnumerable, CancellationToken cancellationToken = default)

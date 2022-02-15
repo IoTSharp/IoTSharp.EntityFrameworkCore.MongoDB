@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "composeLaunchAction": "None",
+      "composeLaunchServiceName": "sample.console",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "mongodb": "StartWithoutDebugging",
+        "sample": "DoNotStart",
+        "sample.console": "StartDebugging"
+      }
+    }
+  }
+}

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
 
 #nullable disable
 
@@ -24,7 +23,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                     var valueBufferExpression = shaperExpression.ValueBufferExpression;
 
                     var jObjectVariable = Expression.Variable(
-                        typeof(JObject),
+                        typeof(BsonDocument),
                         "jObject" + _currentEntityIndex);
                     var variables = new List<ParameterExpression> { jObjectVariable };
 
@@ -34,7 +33,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                             jObjectVariable,
                             Expression.TypeAs(
                                 valueBufferExpression,
-                                typeof(JObject))),
+                                typeof(BsonDocument))),
                         Expression.Condition(
                             Expression.Equal(jObjectVariable, Expression.Constant(null, jObjectVariable.Type)),
                             Expression.Constant(null, shaperExpression.Type),
@@ -52,7 +51,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                     _currentEntityIndex++;
 
                     var jArrayVariable = Expression.Variable(
-                        typeof(JArray),
+                        typeof(BsonArray),
                         "jArray" + _currentEntityIndex);
                     var variables = new List<ParameterExpression> { jArrayVariable };
 
@@ -62,7 +61,7 @@ public partial class MongoDBShapedQueryCompilingExpressionVisitor
                             jArrayVariable,
                             Expression.TypeAs(
                                 collectionShaperExpression.Projection,
-                                typeof(JArray))),
+                                typeof(BsonArray))),
                         Expression.Condition(
                             Expression.Equal(jArrayVariable, Expression.Constant(null, jArrayVariable.Type)),
                             Expression.Constant(null, collectionShaperExpression.Type),

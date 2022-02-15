@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using IoTSharp.EntityFrameworkCore.MongoDB.ChangeTracking.Internal;
-using Newtonsoft.Json.Linq;
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 
@@ -26,7 +25,7 @@ public class MongoDBMappingSource : TypeMappingSource
         : base(dependencies)
     {
         _clrTypeMappings
-            = new Dictionary<Type, MongoDBTypeMapping> { { typeof(JObject), new MongoDBTypeMapping(typeof(JObject)) } };
+            = new Dictionary<Type, MongoDBTypeMapping> { { typeof(BsonDocument), new MongoDBTypeMapping(typeof(BsonDocument)) } };
     }
 
     /// <summary>

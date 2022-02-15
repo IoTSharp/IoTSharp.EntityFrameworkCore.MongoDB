@@ -1,17 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal
 {
-    public class FeedIterator : IFindFluent<Newtonsoft.Json.Linq.JObject, Newtonsoft.Json.Linq.JToken>
+    public class FeedIterator : IFindFluent<BsonDocument, BsonValue>
     {
-        public FilterDefinition<JObject> Filter { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public FilterDefinition<BsonDocument> Filter { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public FindOptions<JObject, JToken> Options => throw new NotImplementedException();
+        public FindOptions<BsonDocument, BsonValue> Options => throw new NotImplementedException();
 
-        public IFindFluent<JObject, TResult> As<TResult>(global::MongoDB.Bson.Serialization.IBsonSerializer<TResult> resultSerializer = null)
+        public IFindFluent<BsonDocument, TResult> As<TResult>(global::MongoDB.Bson.Serialization.IBsonSerializer<TResult> resultSerializer = null)
         {
             throw new NotImplementedException();
         }
@@ -36,32 +35,32 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal
             throw new NotImplementedException();
         }
 
-        public IFindFluent<JObject, JToken> Limit(int? limit)
+        public IFindFluent<BsonDocument, BsonValue> Limit(int? limit)
         {
             throw new NotImplementedException();
         }
 
-        public IFindFluent<JObject, TNewProjection> Project<TNewProjection>(ProjectionDefinition<JObject, TNewProjection> projection)
+        public IFindFluent<BsonDocument, TNewProjection> Project<TNewProjection>(ProjectionDefinition<BsonDocument, TNewProjection> projection)
         {
             throw new NotImplementedException();
         }
 
-        public IFindFluent<JObject, JToken> Skip(int? skip)
+        public IFindFluent<BsonDocument, BsonValue> Skip(int? skip)
         {
             throw new NotImplementedException();
         }
 
-        public IFindFluent<JObject, JToken> Sort(SortDefinition<JObject> sort)
+        public IFindFluent<BsonDocument, BsonValue> Sort(SortDefinition<BsonDocument> sort)
         {
             throw new NotImplementedException();
         }
 
-        public IAsyncCursor<JToken> ToCursor(CancellationToken cancellationToken = default)
+        public IAsyncCursor<BsonValue> ToCursor(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IAsyncCursor<JToken>> ToCursorAsync(CancellationToken cancellationToken = default)
+        public Task<IAsyncCursor<BsonValue>> ToCursorAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

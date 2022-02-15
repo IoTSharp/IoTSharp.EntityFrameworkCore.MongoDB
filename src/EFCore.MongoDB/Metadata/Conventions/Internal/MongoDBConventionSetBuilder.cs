@@ -154,7 +154,7 @@ public class MongoDBConventionSetBuilder : ProviderConventionSetBuilder
             .AddEntityFrameworkMongoDB()
             .AddDbContext<DbContext>(
                 (p, o) =>
-                    o.UseMongoDB("localhost", "_", "_")
+                    o.UseMongoDB("localhost", "_")
                         .UseInternalServiceProvider(p))
             .BuildServiceProvider();
 

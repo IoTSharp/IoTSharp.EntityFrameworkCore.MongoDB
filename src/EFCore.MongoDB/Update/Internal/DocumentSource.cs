@@ -8,7 +8,7 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Conventions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
-using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Update.Internal;
 
@@ -67,7 +67,7 @@ public class DocumentSource
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject CreateDocument(IUpdateEntry entry)
+    public virtual BsonDocument CreateDocument(IUpdateEntry entry)
         => CreateDocument(entry, null);
 
     /// <summary>
@@ -76,9 +76,9 @@ public class DocumentSource
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject CreateDocument(IUpdateEntry entry, int? ordinal)
+    public virtual BsonDocument CreateDocument(IUpdateEntry entry, int? ordinal)
     {
-        var document = new JObject();
+        var document = new BsonDocument();
         foreach (var property in entry.EntityType.GetProperties())
         {
             var storeName = property.GetJsonPropertyName();
@@ -123,7 +123,7 @@ public class DocumentSource
             else
             {
                 var embeddedOrdinal = 1;
-                var array = new JArray();
+                var array = new BsonArray();
                 foreach (var dependent in (IEnumerable)embeddedValue)
                 {
 #pragma warning disable EF1001 // Internal EF Core API usage.
@@ -147,7 +147,7 @@ public class DocumentSource
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject? UpdateDocument(JObject document, IUpdateEntry entry)
+    public virtual BsonDocument? UpdateDocument(BsonDocument document, IUpdateEntry entry)
         => UpdateDocument(document, entry, null);
 
     /// <summary>
@@ -156,7 +156,7 @@ public class DocumentSource
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject? UpdateDocument(JObject document, IUpdateEntry entry, int? ordinal)
+    public virtual BsonDocument? UpdateDocument(BsonDocument document, IUpdateEntry entry, int? ordinal)
     {
         var anyPropertyUpdated = false;
 #pragma warning disable EF1001 // Internal EF Core API usage.
@@ -276,7 +276,7 @@ public class DocumentSource
                 }
 
                 embeddedOrdinal = 1;
-                var array = new JArray();
+                var array = new  BsonArray ();
                 foreach (var dependent in (IEnumerable)embeddedValue)
                 {
 #pragma warning disable EF1001 // Internal EF Core API usage.
@@ -316,16 +316,16 @@ public class DocumentSource
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    public virtual JObject? GetCurrentDocument(IUpdateEntry entry)
+    public virtual BsonDocument ? GetCurrentDocument(IUpdateEntry entry)
         => _jObjectProperty != null
-            ? (JObject?)(entry.SharedIdentityEntry ?? entry).GetCurrentValue(_jObjectProperty)
+            ? (BsonDocument?)(entry.SharedIdentityEntry ?? entry).GetCurrentValue(_jObjectProperty)
             : null;
 
-    private static JToken? ConvertPropertyValue(IProperty property, IUpdateEntry entry)
+    private static BsonValue? ConvertPropertyValue(IProperty property, IUpdateEntry entry)
     {
         var value = entry.GetCurrentProviderValue(property);
         return value == null
             ? null
-            : (value as JToken) ?? JToken.FromObject(value, MongoDBClientWrapper.Serializer);
+            : (value as BsonValue) ?? BsonValue.Create(value);
     }
 }

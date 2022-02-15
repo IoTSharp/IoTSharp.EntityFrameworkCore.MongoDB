@@ -30,8 +30,8 @@ public static class MongoDBEntityTypeExtensions
     private static string? GetDefaultContainer(IReadOnlyEntityType entityType)
         => entityType.FindOwnership() != null
             ? null
-            : entityType.Model.GetDefaultContainer()
-                ?? entityType.ShortName();
+            : entityType.ShortName() 
+                ?? entityType.Model.GetDefaultContainer();
 
     /// <summary>
     ///     Sets the name of the container to which the entity type is mapped.

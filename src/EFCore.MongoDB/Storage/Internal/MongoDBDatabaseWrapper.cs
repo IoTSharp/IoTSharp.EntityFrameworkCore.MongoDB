@@ -7,8 +7,8 @@ using IoTSharp.EntityFrameworkCore.MongoDB.Extensions;
 using IoTSharp.EntityFrameworkCore.MongoDB.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Metadata.Internal;
 using IoTSharp.EntityFrameworkCore.MongoDB.Update.Internal;
-using Newtonsoft.Json.Linq;
 using Database = Microsoft.EntityFrameworkCore.Storage.Database;
+using MongoDB.Bson;
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 
@@ -208,7 +208,7 @@ public class MongoDBDatabaseWrapper : Database
                     newDocument = documentSource.CreateDocument(entry);
                 }
 
-                return _MongoDBClient.CreateItem(collectionId, newDocument, entry);
+                return _MongoDBClient.CreateItem(collectionId, newDocument,entry);
 
             case EntityState.Modified:
                 var document = documentSource.GetCurrentDocument(entry);
@@ -227,7 +227,7 @@ public class MongoDBDatabaseWrapper : Database
                     if (propertyName != null)
                     {
                         document[propertyName] =
-                            JToken.FromObject(entityType.GetDiscriminatorValue(), MongoDBClientWrapper.Serializer);
+                            BsonValue.Create(entityType.GetDiscriminatorValue());
                     }
                 }
 
@@ -276,7 +276,7 @@ public class MongoDBDatabaseWrapper : Database
                 }
 
                 return _MongoDBClient.CreateItemAsync(
-                    collectionId, newDocument, entry, cancellationToken);
+                    collectionId,   newDocument, entry, cancellationToken);
 
             case EntityState.Modified:
                 var document = documentSource.GetCurrentDocument(entry);
@@ -295,7 +295,7 @@ public class MongoDBDatabaseWrapper : Database
                     if (propertyName != null)
                     {
                         document[propertyName] =
-                            JToken.FromObject(entityType.GetDiscriminatorValue(), MongoDBClientWrapper.Serializer);
+                            BsonValue.Create(entityType.GetDiscriminatorValue());
                     }
                 }
 

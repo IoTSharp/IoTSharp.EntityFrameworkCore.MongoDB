@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Newtonsoft.Json.Linq;
+using MongoDB.Bson;
 
 namespace IoTSharp.EntityFrameworkCore.MongoDB.Storage.Internal;
 
@@ -67,7 +67,8 @@ public interface IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    bool CreateItem(string containerId, JToken document, IUpdateEntry entry);
+    bool CreateItem(string containerId, BsonDocument document, IUpdateEntry entry);
+   
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -78,7 +79,7 @@ public interface IMongoDBClientWrapper
     bool ReplaceItem(
         string collectionId,
         string documentId,
-        JObject document,
+        BsonDocument document,
         IUpdateEntry entry);
 
     /// <summary>
@@ -100,7 +101,7 @@ public interface IMongoDBClientWrapper
     /// </summary>
     Task<bool> CreateItemAsync(
         string containerId,
-        JToken document,
+        BsonDocument document,
         IUpdateEntry updateEntry,
         CancellationToken cancellationToken = default);
 
@@ -113,7 +114,7 @@ public interface IMongoDBClientWrapper
     Task<bool> ReplaceItemAsync(
         string collectionId,
         string documentId,
-        JObject document,
+        BsonDocument document,
         IUpdateEntry updateEntry,
         CancellationToken cancellationToken = default);
 
@@ -143,7 +144,7 @@ public interface IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    JObject? ExecuteReadItem(
+    BsonDocument? ExecuteReadItem(
         string containerId,
         string? partitionKey,
         string resourceId);
@@ -154,7 +155,7 @@ public interface IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    Task<JObject?> ExecuteReadItemAsync(
+    Task<BsonDocument?> ExecuteReadItemAsync(
         string containerId,
         string? partitionKey,
         string resourceId,
@@ -166,7 +167,7 @@ public interface IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    IEnumerable<JObject> ExecuteSqlQuery(
+    IEnumerable<BsonDocument> ExecuteSqlQuery(
         string containerId,
         string? partitionKey,
         MongoDBSqlQuery query);
@@ -177,7 +178,7 @@ public interface IMongoDBClientWrapper
     ///     any release. You should only use it directly in your code with extreme caution and knowing that
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
-    IAsyncEnumerable<JObject> ExecuteSqlQueryAsync(
+    IAsyncEnumerable<BsonDocument> ExecuteSqlQueryAsync(
         string containerId,
         string? partitionKey,
         MongoDBSqlQuery query);
