@@ -1,7 +1,7 @@
 ---
-name: Bug in Microsoft.Data.Sqlite
+name: Bug in TSharp.EntityFrameworkCore.MongoDB
 about: Create a report about something that isn't working
-labels: area-adonet-sqlite, customer-reported
+labels: area-adonet-mongodb, customer-reported
 ---
 
 ## File a bug
@@ -9,7 +9,7 @@ labels: area-adonet-sqlite, customer-reported
 Remember:
 
 * Please check that the [documentation](https://docs.microsoft.com/ef/) does not explain the behavior you are seeing.
-* Please search in both [open](https://github.com/dotnet/efcore/issues) and [closed](https://github.com/dotnet/efcore/issues?q=is%3Aissue+is%3Aclosed) issues to check that your bug has not already been filed.
+ 
 
 ### Include your code
 
@@ -37,7 +37,8 @@ Unhandled exception. System.NullReferenceException: Object reference not set to 
 
 ### Include version information
 
-Microsoft.Data.Sqlite version:
+MongoDB: 
+IoTSharp.EntityFrameworkCore.MongoDB version:
 Target framework: (e.g. .NET 5.0)
 Operating system:
 
