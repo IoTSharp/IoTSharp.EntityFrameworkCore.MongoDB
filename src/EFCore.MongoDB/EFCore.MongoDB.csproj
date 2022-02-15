@@ -1,15 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Azure Cosmos provider for Entity Framework Core.</Description>
+    <Description>MongoDB provider for Entity Framework Core.</Description>
     <TargetFramework>net6.0</TargetFramework>
     <MinClientVersion>3.6</MinClientVersion>
     <AssemblyName>IoTSharp.EntityFrameworkCore.MongoDB</AssemblyName>
     <RootNamespace>IoTSharp.EntityFrameworkCore.MongoDB</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>$(PackageTags);CosmosDb;SQL API</PackageTags>
+    <PackageTags>$(PackageTags);MongoDb;SQL API;EntityFrameworkCore;IoTSharp</PackageTags>
     <ImplicitUsings>true</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackageProjectUrl>https://github.com/IoTSharp/IoTSharp.EntityFrameworkCore.MongoDB</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo.jpg</PackageIcon>
+    <Company>IoTSharp</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/IoTSharp/IoTSharp.EntityFrameworkCore.MongoDB.git</RepositoryUrl>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.Diagnostics" />
@@ -33,11 +39,22 @@
     <Using Include="Microsoft.Extensions.Logging" />
     <Using Include="Microsoft.Extensions.DependencyInjection" />
     <Using Include="MongoDB.Driver" />
-    <Using Include="MongoDB.Bson"/>
+    <Using Include="MongoDB.Bson" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\Shared\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\logo.jpg">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
  
