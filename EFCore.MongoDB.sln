@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 17.0.31521.260
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B9E4CC99-199C-4E3B-9EC5-D1FDFCD6C27B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		global.json = global.json
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -13,9 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CE6B50B2-34A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EFCore.MongoDB", "src\EFCore.MongoDB\EFCore.MongoDB.csproj", "{D0D567AA-0B92-4D9C-B9E2-459D3FDDB94C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "src\Sample\Sample.csproj", "{8ECD3920-1B7D-48E4-88FC-0CE56B5C7A9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "src\Sample\Sample.csproj", "{8ECD3920-1B7D-48E4-88FC-0CE56B5C7A9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Console", "src\Sample.Console\Sample.Console.csproj", "{A1BC8135-0580-49AE-BC9D-DB16E816DB7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Console", "src\Sample.Console\Sample.Console.csproj", "{A1BC8135-0580-49AE-BC9D-DB16E816DB7A}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{5EB83A3C-4101-46B7-AD63-83AD3576AC4C}"
 EndProject
