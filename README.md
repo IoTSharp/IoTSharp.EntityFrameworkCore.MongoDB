@@ -1,6 +1,6 @@
 ## IoTSharp.EntityFrameworkCore.MongoDB
 
-[![latest version](https://img.shields.io/nuget/v/Microsoft.EntityFrameworkCore)](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore) [![preview version](https://img.shields.io/nuget/vpre/Microsoft.EntityFrameworkCore)](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore/absoluteLatest) [![downloads](https://img.shields.io/nuget/dt/Microsoft.EntityFrameworkCore)](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore)
+[![latest version](https://img.shields.io/nuget/v/IoTSharp.EntityFrameworkCore.MongoDB)](https://www.nuget.org/packages/IoTSharp.EntityFrameworkCore.MongoDB) [![preview version](https://img.shields.io/nuget/vpre/IoTSharp.EntityFrameworkCore.MongoDB)](https://www.nuget.org/packages/IoTSharp.EntityFrameworkCore.MongoDB/absoluteLatest) [![downloads](https://img.shields.io/nuget/dt/IoTSharp.EntityFrameworkCore.MongoDB)](https://www.nuget.org/packages/IoTSharp.EntityFrameworkCore.MongoDB)
 
 EFCore.MongoDB  is a MongoDB mapper for .NET. It supports LINQ queries, change tracking, updates, and schema migrations. EFCore.MongoDB   works with MongoDB through a provider plugin API.
 
