@@ -16,6 +16,7 @@
     <Company>IoTSharp</Company>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/IoTSharp/IoTSharp.EntityFrameworkCore.MongoDB.git</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <Using Include="System.Diagnostics" />
