@@ -14,7 +14,6 @@ IMongoDatabase db = client.GetDatabase(dbname);
 var  collection = db.GetCollection<User>("User");
 
 User MongodbLog = new User();
-
 MongodbLog.Id = ObjectId.GenerateNewId();
 MongodbLog.Name = "测试信息name";
 MongodbLog.EX = "错误信息";
@@ -25,9 +24,9 @@ MongodbLog.Creator = "liusqd";
 
 MongodbLog.CreateDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 MongodbLog.LastEditDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-collection.InsertOneAsync(MongodbLog);
-collection.DeleteOne(u => u.Id == MongodbLog.Id);
-db.DropCollection("User");
+//collection.InsertOneAsync(MongodbLog);
+//collection.DeleteOne(u => u.Id == MongodbLog.Id);
+//db.DropCollection("User");
 
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddMongoDB<ApplicationDbContext>(connStr, dbname);

@@ -34,12 +34,15 @@ public class MongoDBValueGeneratorSelector : ValueGeneratorSelector
     {
         var type = property.ClrType.UnwrapNullableType().UnwrapEnumType();
 
-        if (property.GetJsonPropertyName() == ""
-            && type == typeof(int))
+        if (type == typeof(ObjectId))
+        {
+            return new IdValueGeneratorFactory().Create(property, entityType);
+        }
+        else if (property.GetJsonPropertyName() == ""
+      && type == typeof(int))
         {
             return new TemporaryNumberValueGeneratorFactory().Create(property, entityType);
         }
-
         return base.Create(property, entityType);
     }
 }

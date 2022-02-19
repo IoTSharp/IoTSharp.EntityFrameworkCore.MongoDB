@@ -238,7 +238,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
              TimeSpan.Zero,
          0,
           "",
-            parameters.Document["id"].ToString(),
+            parameters.Document["_id"].ToString(),
             parameters.ContainerId,
             partitionKey);
 
@@ -283,33 +283,24 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         (string ContainerId, string ResourceId, BsonDocument Document, IUpdateEntry Entry, MongoDBClientWrapper Wrapper) parameters,
         CancellationToken cancellationToken = default)
     {
-        //var stream = new MemoryStream();
-        //await using var __ = stream.ConfigureAwait(false);
-        //var writer = new StreamWriter(stream, new UTF8Encoding(), bufferSize: 1024, leaveOpen: false);
-        //await using var ___ = writer.ConfigureAwait(false);
-        //using var jsonWriter = new JsonWriter(writer);
-        //jsonWriter.WriteSta parameters.Document);
-        //await jsonWriter.Flush();
-
         var entry = parameters.Entry;
         var wrapper = parameters.Wrapper;
-        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>(parameters.ContainerId);
+        var resid = parameters.ResourceId;
+        var collname = parameters.ContainerId;
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>(collname);
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
-        var partitionKey = CreatePartitionKey(entry);
-        var v = itemRequestOptions?.IfMatchEtag?.ToString();
-          var response = await container.ReplaceOneAsync(bs=>((ObjectId)bs)== ObjectId.Parse( partitionKey), parameters.Document, cancellationToken: cancellationToken).ConfigureAwait(false); 
-           
-
+      //  var partitionKey = CreatePartitionKey(entry);
+            var response = await container.ReplaceOneAsync(bs =>   bs[itemRequestOptions.Key.Name] == resid, parameters.Document, cancellationToken: cancellationToken).ConfigureAwait(false);
         wrapper._commandLogger.ExecutedReplaceItem(
             TimeSpan.Zero,
             1,
             "",
             parameters.ResourceId,
             parameters.ContainerId,
-            partitionKey);
+            "");
 
 
-        return response.IsAcknowledged;
+        return response.IsModifiedCountAvailable && response.ModifiedCount>0;
     }
 
     /// <summary>
@@ -352,9 +343,9 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         var items = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>( parameters.ColletionName);
 
         var itemRequestOptions = CreateItemRequestOptions(entry, wrapper._enableContentResponseOnWrite);
-        var partitionKey = CreatePartitionKey(entry);
-
-          var response = await items.DeleteOneAsync(bd => bd.Any(e => e.Name == partitionKey && e.Value == itemRequestOptions.IfMatchEtag), cancellationToken).ConfigureAwait(false);
+        
+      
+        var response = await items.DeleteOneAsync(bd => bd[itemRequestOptions.Key.Name] == itemRequestOptions.Id, cancellationToken).ConfigureAwait(false);
              
 
         wrapper._commandLogger.ExecutedDeleteItem(
@@ -363,7 +354,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
            "" ,
             parameters.TableName,
             parameters.ColletionName,
-            partitionKey);
+            "");
 
 
         return response.DeletedCount==1 ;
@@ -371,17 +362,19 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
 
     private static ItemRequestOptions? CreateItemRequestOptions(IUpdateEntry entry, bool? enableContentResponseOnWrite)
     {
-        var etagProperty = entry.EntityType.GetETagProperty();
-        if (etagProperty == null)
+        var idProperty = entry.EntityType.FindPrimaryKey().Properties.FirstOrDefault();
+        if (idProperty == null)
         {
             return null;
         }
 
-        var etag = entry.GetOriginalValue(etagProperty);
-        var converter = etagProperty.GetTypeMapping().Converter;
+        var id = entry.GetOriginalValue(idProperty);
+        var converter = idProperty.GetTypeMapping().Converter;
+        var vgf = idProperty.GetValueGeneratorFactory();
+        
         if (converter != null)
         {
-            etag = converter.ConvertToProvider(etag);
+            id = converter.ConvertToProvider(id);
         }
 
         bool enabledContentResponse;
@@ -410,8 +403,7 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
                     break;
             }
         }
-
-        return new ItemRequestOptions { IfMatchEtag = BsonValue.Create( etag), EnableContentResponseOnWrite = enabledContentResponse };
+        return new ItemRequestOptions { Key = idProperty , Id =  (ObjectId) id, EnableContentResponseOnWrite = enabledContentResponse };
     }
 
     private static string? CreatePartitionKey(IUpdateEntry entry)
@@ -535,11 +527,11 @@ public class MongoDBClientWrapper : IMongoDBClientWrapper
         (string ContainerId, string? PartitionKey, string ResourceId, MongoDBClientWrapper Wrapper) parameters,
         CancellationToken cancellationToken = default)
     {
-        //var (containerId, partitionKey, resourceId, wrapper) = parameters;
-        //var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<JToken>(containerId);
-
-        // var v= container.
-        // var rm=new ResponseMessage() {  MessageType= MongoDBMessageType.Query}
+        var (containerId, partitionKey, resourceId, wrapper) = parameters;
+        var container = wrapper.Client.GetDatabase(wrapper._databaseId).GetCollection<BsonDocument>(containerId);
+        
+        //var v = container.FindAsync<BsonDocument>(bs=>bs]).GetAwaiter().GetResult();
+        // var rm = new ResponseMessage() { MessageType = MongoDBMessageType.Query }
 
        throw new NotImplementedException();
     }

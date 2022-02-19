@@ -42,42 +42,28 @@ public class IdValueGenerator : ValueGenerator
     protected override object NextValue(EntityEntry entry)
     {
         var builder = new StringBuilder();
+        object value =string.Empty;
         var entityType = entry.Metadata;
 
         var primaryKey = entityType.FindPrimaryKey()!;
-        var discriminator = entityType.GetDiscriminatorValue();
-        if (discriminator != null
-            && !primaryKey.Properties.Contains(entityType.FindDiscriminatorProperty()))
+        var type = primaryKey.GetKeyType();
+        //这里不需要鉴别器， 鉴于 GenerateNewId的实现。 
+        //var discriminator = entityType.GetDiscriminatorValue();
+        if (type==typeof(ObjectId))
         {
-            AppendString(builder, discriminator);
-            builder.Append('|');
+          
+            builder.Append(ObjectId.GenerateNewId().ToString());    
         }
-
-        var partitionKey = entityType.GetPartitionKeyPropertyName();
-        foreach (var property in primaryKey.Properties)
+        else if (type==typeof(string))
         {
-            if (property.Name == partitionKey
-                && primaryKey.Properties.Count > 1)
-            {
-                continue;
-            }
 
-            var value = entry.Property(property.Name).CurrentValue;
-
-            var converter = property.GetTypeMapping().Converter;
-            if (converter != null)
-            {
-                value = converter.ConvertToProvider(value);
-            }
-
-            AppendString(builder, value);
-
-            builder.Append('|');
         }
+        else if (type== typeof(int))
+        {
 
-        builder.Remove(builder.Length - 1, 1);
-
-        return builder.ToString();
+        }
+  
+        return  builder.ToString(); 
     }
 
     private static void AppendString(StringBuilder builder, object? propertyValue)

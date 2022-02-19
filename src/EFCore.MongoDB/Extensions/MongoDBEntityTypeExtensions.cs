@@ -217,6 +217,8 @@ public static class MongoDBEntityTypeExtensions
     public static string? GetETagPropertyName(this IReadOnlyEntityType entityType)
         => entityType[MongoDBAnnotationNames.ETagName] as string;
 
+ 
+
     /// <summary>
     ///     Sets the name of the property that is used to store the ETag key.
     /// </summary>
@@ -262,7 +264,7 @@ public static class MongoDBEntityTypeExtensions
 
         return !string.IsNullOrEmpty(etagPropertyName) ? entityType.FindProperty(etagPropertyName) : null;
     }
-
+   
     /// <summary>
     ///     Gets the property on this entity that is mapped to MongoDB ETag, if it exists.
     /// </summary>
@@ -271,6 +273,7 @@ public static class MongoDBEntityTypeExtensions
     public static IProperty? GetETagProperty(this IEntityType entityType)
         => (IProperty?)((IReadOnlyEntityType)entityType).GetETagProperty();
 
+   
     /// <summary>
     ///     Returns the time to live for analytical store in seconds at container scope.
     /// </summary>

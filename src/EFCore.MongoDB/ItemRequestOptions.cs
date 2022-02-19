@@ -7,7 +7,8 @@ namespace IoTSharp.EntityFrameworkCore.MongoDB
 {
     internal class ItemRequestOptions
     {
-        public  BsonValue? IfMatchEtag { get; set; }
+        public  ObjectId? Id { get; set; }
+        public IProperty Key { get; set; }
         public bool EnableContentResponseOnWrite { get; set; }
     }
 }
